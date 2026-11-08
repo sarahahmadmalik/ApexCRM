@@ -1,13 +1,14 @@
 -- One-off: reset the password for saramalik@dua-dev.com.
--- Run in Supabase Dashboard -> SQL Editor. DELETE THIS FILE afterwards (it contains a password).
--- Change the password after signing in (Profile -> Change password).
+-- Run in Supabase Dashboard -> SQL Editor. Set `new_password` first; never commit a real password.
+-- Change the password after signing in (Settings -> Change password).
 
 do $$
 declare
   target_email text := 'saramalik@dua-dev.com';
-  new_password text := 'KbxaBdaAS3t2vU9eAa7!';
+  new_password text := 'CHANGE_ME_BEFORE_RUNNING';
   target_id uuid;
 begin
+  if left(new_password, 9) = 'CHANGE_ME' then raise exception 'Set a strong password in this script before running it (and never commit it).'; end if;
   select id into target_id from auth.users where lower(email) = lower(target_email);
   if target_id is null then
     raise exception 'No auth user found for %', target_email;

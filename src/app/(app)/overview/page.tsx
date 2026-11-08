@@ -32,13 +32,20 @@ export default async function OverviewPage({
   const { country: countryParam } = await searchParams;
   const supabase = await createClient();
 
+  // Resolve the country first so the firm list below can be filtered in SQL: fetching every firm and
+  // filtering in JS was slower and silently capped at 1000 rows (there are more firms than that).
+  const selectedCountry =
+    countryParam ??
+    (await supabase.from("firms").select("country").order("created_at", { ascending: false }).limit(1).maybeSingle()).data
+      ?.country ??
+    "Germany";
+
   const [
     inProgress,
     sent,
     responded,
     negotiation,
     clients,
-    latestFirm,
     cityRows,
     allFirmsForCountry,
     activity,
@@ -49,14 +56,11 @@ export default async function OverviewPage({
     countByStatus(supabase, "responded"),
     countByStatus(supabase, "negotiation"),
     countByStatus(supabase, "client"),
-    supabase.from("firms").select("country").order("created_at", { ascending: false }).limit(1).maybeSingle(),
     supabase.from("city_status").select("*"),
-    supabase.from("firms").select("id, name, status, country, state, city"),
+    supabase.from("firms").select("id, name, status, country, state, city").eq("country", selectedCountry).limit(1000),
     supabase.from("firm_status_history_feed").select("*").limit(8),
     supabase.from("dashboard_daily_snapshot").select("*").order("snapshot_date", { ascending: true }),
   ]);
-
-  const selectedCountry = countryParam ?? latestFirm.data?.country ?? "Germany";
 
   const allCityRows = cityRows.data ?? [];
 

@@ -42,6 +42,8 @@ export interface Database {
           workspace_id: string;
           is_active: boolean;
           theme_preference: "light" | "dark" | "system" | null;
+          /** Where the AI assistant button shows for this user. Null = header. */
+          assistant_placement: "header" | "floating" | "hidden" | null;
           created_at: string;
         };
         Insert: Partial<Database["public"]["Tables"]["app_users"]["Row"]> & {

@@ -89,7 +89,7 @@ test("pageForPath maps nested routes and ignores lookalikes", () => {
   assert.equal(pageForPath("/firms"), "firms");
   assert.equal(pageForPath("/firms/123"), "firms");
   assert.equal(pageForPath("/firmsx"), null);
-  assert.equal(pageForPath("/profile"), null);
+  assert.equal(pageForPath("/settings"), null);
 });
 
 test("summarizePermissions", () => {

@@ -3,6 +3,8 @@
 import { createClient, getCurrentAppUser } from "@/lib/supabase/server";
 import { COUNTRY_NAMES } from "@/lib/data/geo";
 import { hasAccess } from "@/lib/permissions";
+import { validateMemberPassword } from "@/lib/password";
+import { rateLimit, tooManyAttempts } from "@/lib/security";
 import { revalidatePath } from "next/cache";
 
 export type ThemePreference = "light" | "dark" | "system";
@@ -27,8 +29,13 @@ export async function updateThemePreference(theme: ThemePreference) {
 export async function changePassword(currentPassword: string, newPassword: string) {
   const appUser = await getCurrentAppUser();
   if (!appUser?.email) throw new Error("Unauthorized");
-  if (newPassword.length < 8) throw new Error("New password must be at least 8 characters.");
+  const weak = validateMemberPassword(newPassword);
+  if (weak) throw new Error(weak);
   if (newPassword === currentPassword) throw new Error("New password must be different from the current one.");
+
+  // Re-checking the current password is a password-guessing oracle for anyone on an unlocked session: throttle it.
+  const limited = rateLimit(`chgpw:${appUser.id}`, 5, 15 * 60 * 1000);
+  if (!limited.ok) throw new Error(tooManyAttempts(limited.retryAfter));
 
   const supabase = await createClient();
 

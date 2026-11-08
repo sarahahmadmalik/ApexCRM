@@ -3,7 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { calcTotals, formatCurrency, formatDate } from "@/lib/utils";
 import { renderDocxTemplate } from "@/lib/documents/generate";
-import { renderPdf } from "@/lib/documents/pdf";
+import { convertDocxToPdf } from "@/lib/documents/convert";
 import { storeAndSign, slug, type DocumentFormat } from "@/lib/documents/storage";
 import type { InvoiceStatus, LineItem } from "@/lib/types/database";
 import { assertAccess } from "@/lib/auth/guards";
@@ -111,50 +111,27 @@ export async function downloadInvoiceDocument(id: string, format: DocumentFormat
     total: formatCurrency(li.total),
   }));
 
-  const buffer =
-    format === "docx"
-      ? renderDocxTemplate("rechnung-template.docx", {
-          salutation,
-          signer_name: SIGNER_NAME,
-          firm_name: firm.name,
-          firm_department: "",
-          contact_name: firm.contact_name ?? "",
-          firm_address_line: "",
-          firm_postal_city: `${firm.city}, ${firm.country}`,
-          invoice_number: invoice.invoice_number,
-          issue_date: formatDate(invoice.issue_date),
-          customer_number: customerNumber,
-          service_period: servicePeriod,
-          vat_rate: invoice.vat_rate,
-          net_amount: formatCurrency(invoice.net_amount),
-          vat_amount: formatCurrency(invoice.vat_amount),
-          total_amount: formatCurrency(invoice.total_amount),
-          due_date: formatDate(invoice.due_date),
-          items,
-        })
-      : await renderPdf({
-          title: "Rechnung",
-          recipient: [firm.name, ...(firm.contact_name ? [firm.contact_name] : []), `${firm.city}, ${firm.country}`],
-          meta: [
-            ["Rechnungsnummer", invoice.invoice_number],
-            ["Rechnungsdatum", formatDate(invoice.issue_date)],
-            ["Kundennummer", customerNumber],
-            ["Leistungszeitraum", servicePeriod],
-            ["Fällig am", formatDate(invoice.due_date)],
-          ],
-          intro: [salutation, "für die erbrachten Leistungen erlauben wir uns, Ihnen Folgendes in Rechnung zu stellen:"],
-          items: { labels: ["Pos.", "Beschreibung", "Menge", "Einzelpreis", "Gesamt"], rows: items },
-          totals: [
-            { label: "Nettobetrag", value: formatCurrency(invoice.net_amount) },
-            { label: `zzgl. ${invoice.vat_rate}% USt.`, value: formatCurrency(invoice.vat_amount) },
-            { label: "Rechnungsbetrag", value: formatCurrency(invoice.total_amount), strong: true },
-          ],
-          closing: [
-            `Bitte überweisen Sie den Rechnungsbetrag bis zum ${formatDate(invoice.due_date)}.`,
-            "Mit freundlichen Grüßen",
-            SIGNER_NAME,
-          ],
-        });
+  const docx = renderDocxTemplate("rechnung-template.docx", {
+    salutation,
+    signer_name: SIGNER_NAME,
+    firm_name: firm.name,
+    firm_department: "",
+    contact_name: firm.contact_name ?? "",
+    firm_address_line: "",
+    firm_postal_city: `${firm.city}, ${firm.country}`,
+    invoice_number: invoice.invoice_number,
+    issue_date: formatDate(invoice.issue_date),
+    customer_number: customerNumber,
+    service_period: servicePeriod,
+    vat_rate: invoice.vat_rate,
+    net_amount: formatCurrency(invoice.net_amount),
+    vat_amount: formatCurrency(invoice.vat_amount),
+    total_amount: formatCurrency(invoice.total_amount),
+    due_date: formatDate(invoice.due_date),
+    items,
+  });
+  // PDFs are the same filled Word template, converted — so both formats match it exactly.
+  const buffer = format === "docx" ? docx : await convertDocxToPdf(docx, "invoice.docx");
 
   const filePath = `invoices/${invoice.invoice_number}.${format}`;
   const url = await storeAndSign(

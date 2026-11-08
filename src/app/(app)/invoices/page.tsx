@@ -8,6 +8,9 @@ import { Receipt, CheckCircle2, AlertTriangle, Banknote } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import { requirePageAccess } from "@/lib/auth/guards";
 
+// PDF export converts via an external service, which can take a few seconds.
+export const maxDuration = 60;
+
 export default async function InvoicesPage({
   searchParams,
 }: {

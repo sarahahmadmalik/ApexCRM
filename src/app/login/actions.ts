@@ -2,8 +2,9 @@
 
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { clientIp, rateLimit, resetRateLimit, tooManyAttempts } from "@/lib/security";
+import { JUST_SIGNED_IN_COOKIE, clientIp, justSignedInCookieOptions, rateLimit, resetRateLimit, tooManyAttempts } from "@/lib/security";
 
 const WINDOW = 15 * 60 * 1000;
 const emailSchema = z.string().max(254).pipe(z.email());
@@ -46,5 +47,6 @@ export async function login(_prevState: { error: string; email: string }, formDa
   }
 
   resetRateLimit(acctKey);
+  (await cookies()).set(JUST_SIGNED_IN_COOKIE, "1", justSignedInCookieOptions());
   redirect("/overview");
 }

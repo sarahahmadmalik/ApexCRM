@@ -3,7 +3,8 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { RESET_VERIFIED_COOKIE } from "@/lib/security";
+import { JUST_SIGNED_IN_COOKIE, RESET_VERIFIED_COOKIE, justSignedInCookieOptions } from "@/lib/security";
+import { validateMemberPassword } from "@/lib/password";
 
 const EXPIRED = "Your reset session has expired. Request a new code from the login page.";
 
@@ -11,8 +12,8 @@ export async function setNewPassword(_prevState: { error: string }, formData: Fo
   const password = String(formData.get("password") ?? "");
   const confirm = String(formData.get("confirm") ?? "");
 
-  if (password.length < 8) return { error: "Password must be at least 8 characters." };
-  if (password.length > 72) return { error: "Password must be 72 characters or fewer." };
+  const weak = validateMemberPassword(password);
+  if (weak) return { error: weak };
   if (password !== confirm) return { error: "Passwords don't match." };
 
   const jar = await cookies();
@@ -31,6 +32,7 @@ export async function setNewPassword(_prevState: { error: string }, formData: Fo
   // person who was already logged in elsewhere.
   await supabase.auth.signOut({ scope: "others" });
   jar.delete(RESET_VERIFIED_COOKIE);
+  jar.set(JUST_SIGNED_IN_COOKIE, "1", justSignedInCookieOptions());
 
   redirect("/overview");
 }

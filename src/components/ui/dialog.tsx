@@ -21,6 +21,7 @@ export function Dialog({
   description,
   children,
   footer,
+  header: customHeader,
   size = "md",
   position = "center",
 }: {
@@ -31,6 +32,8 @@ export function Dialog({
   children: React.ReactNode;
   /** Sticky action row pinned to the bottom of the panel. */
   footer?: React.ReactNode;
+  /** Replaces the default title bar (must include its own close button). */
+  header?: React.ReactNode;
   size?: "sm" | "md" | "lg" | "xl";
   /** "right" renders a full-height slide-over panel instead of a centered modal. */
   position?: "center" | "right";
@@ -77,7 +80,7 @@ export function Dialog({
 
   // Header/footer sit on a tinted surface so the panel reads as three bands
   // rather than one flat sheet.
-  const header = (
+  const header = customHeader ?? (
     <div className="flex shrink-0 items-start justify-between gap-4 border-b border-gray-200 bg-gray-50 px-5 py-4 sm:px-6 sm:py-5 dark:border-white/10 dark:bg-navy-900">
       <div className="min-w-0">
         <h2 className="font-display text-base font-semibold text-gray-900 sm:text-lg dark:text-gray-100">{title}</h2>

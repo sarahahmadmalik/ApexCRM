@@ -132,6 +132,7 @@ create table if not exists app_users (
 );
 
 alter table app_users add column if not exists theme_preference text;
+alter table app_users add column if not exists assistant_placement text;
 alter table app_users add column if not exists workspace_id uuid references workspaces (id);
 alter table app_users add column if not exists account_role text not null default 'user';
 alter table app_users add column if not exists is_active boolean not null default true;
@@ -141,6 +142,9 @@ do $$
 begin
   if not exists (select 1 from pg_constraint where conname = 'app_users_theme_preference_check' and conrelid = 'app_users'::regclass) then
     alter table app_users add constraint app_users_theme_preference_check check (theme_preference in ('light', 'dark', 'system'));
+  end if;
+  if not exists (select 1 from pg_constraint where conname = 'app_users_assistant_placement_check' and conrelid = 'app_users'::regclass) then
+    alter table app_users add constraint app_users_assistant_placement_check check (assistant_placement in ('header', 'floating', 'hidden'));
   end if;
   if not exists (select 1 from pg_constraint where conname = 'app_users_account_role_check' and conrelid = 'app_users'::regclass) then
     alter table app_users add constraint app_users_account_role_check check (account_role in ('admin', 'user'));
@@ -857,7 +861,7 @@ create policy "page access read counters" on counters
 
 -- Column-level lock: a signed-in user may change ONLY their own theme on app_users.
 revoke insert, update, delete on app_users from anon, authenticated;
-grant update (theme_preference) on app_users to authenticated;
+grant update (theme_preference, assistant_placement) on app_users to authenticated;
 revoke insert, update, delete on user_permissions from anon, authenticated;
 revoke insert, update, delete on workspaces from anon, authenticated;
 

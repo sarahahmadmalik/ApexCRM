@@ -326,7 +326,7 @@ export function EmployeeFormDialog({
                     The contract uses the duration and salary above, and both are required.
                   </p>
                   <FormRow label="Notes" hint="Anything else to include in the contract">
-                    <Textarea name="contract_notes" rows={2} />
+                    <Textarea name="contract_notes" rows={2} placeholder="e.g. Probation period of 6 months" />
                   </FormRow>
                 </div>
               )}

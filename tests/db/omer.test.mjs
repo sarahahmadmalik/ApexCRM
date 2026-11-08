@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { applyMigrations, asUser, createDb, prepareMigration, runAdminScript } from "./harness.mjs";
+import { TEST_PASSWORD, applyMigrations, asUser, createDb, prepareMigration, runAdminScript, withTestPassword } from "./harness.mjs";
 
 const omerScript = readFileSync("supabase/scripts/create_user_omer.sql", "utf8");
 
@@ -9,7 +9,7 @@ async function setup() {
   const db = await createDb();
   await applyMigrations(db);
   await runAdminScript(db);
-  await db.exec(prepareMigration(omerScript));
+  await db.exec(prepareMigration(withTestPassword(omerScript)));
   const omer = (await db.query("select u.id, u.encrypted_password, a.* from auth.users u join app_users a on a.id = u.id where u.email = 'info@dua-dev.com'")).rows[0];
   return { db, omer };
 }
@@ -26,13 +26,20 @@ test("creates Omer Farooq as CEO, a regular user, in the admin's workspace", asy
   await db.close();
 });
 
-test("the password is exactly the one requested", async () => {
+test("the password is set from the script variable, and refuses to run with the placeholder", async () => {
   const { db, omer } = await setup();
-  const ok = await db.query("select encrypted_password = extensions.crypt('!Duresameen8989', encrypted_password) as ok from auth.users where id = $1", [omer.id]);
+  const ok = await db.query("select encrypted_password = extensions.crypt($2, encrypted_password) as ok from auth.users where id = $1", [omer.id, TEST_PASSWORD]);
   assert.equal(ok.rows[0].ok, true);
-  const wrong = await db.query("select encrypted_password = extensions.crypt('!duresameen8989', encrypted_password) as ok from auth.users where id = $1", [omer.id]);
+  const wrong = await db.query("select encrypted_password = extensions.crypt($2, encrypted_password) as ok from auth.users where id = $1", [omer.id, TEST_PASSWORD.toLowerCase()]);
   assert.equal(wrong.rows[0].ok, false);
   await db.close();
+
+  // The committed script must never run with its placeholder password.
+  const fresh = await createDb();
+  await applyMigrations(fresh);
+  await runAdminScript(fresh);
+  await assert.rejects(fresh.exec(prepareMigration(omerScript)), /Set a strong password/);
+  await fresh.close();
 });
 
 test("read & write on all seven pages, and nothing beyond them", async () => {
@@ -56,7 +63,7 @@ test("he can work on data but is not an admin and cannot change roles or permiss
 test("running it again changes nothing and keeps the password", async () => {
   const { db, omer } = await setup();
   await db.query("delete from user_permissions where user_id = $1 and page = 'invoices'", [omer.id]);
-  await db.exec(prepareMigration(omerScript));
+  await db.exec(prepareMigration(withTestPassword(omerScript)));
   const after = (await db.query("select encrypted_password from auth.users where id = $1", [omer.id])).rows[0];
   assert.equal(after.encrypted_password, omer.encrypted_password);
   assert.equal((await db.query("select count(*)::int n from user_permissions where user_id = $1", [omer.id])).rows[0].n, 7, "permissions are restored");

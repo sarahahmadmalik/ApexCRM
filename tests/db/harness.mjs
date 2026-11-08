@@ -87,8 +87,12 @@ export async function applyMigrations(db, { upTo, from } = {}) {
   }
 }
 
+/** The scripts ship with a placeholder password (and refuse to run with it); tests substitute a throwaway one. */
+export const TEST_PASSWORD = "Test-only-passw0rd!";
+export const withTestPassword = (sql) => sql.replaceAll("CHANGE_ME_BEFORE_RUNNING", TEST_PASSWORD);
+
 export function runAdminScript(db) {
-  return db.exec(readFileSync(ADMIN_SCRIPT, "utf8"));
+  return db.exec(withTestPassword(readFileSync(ADMIN_SCRIPT, "utf8")));
 }
 
 const q = (v) => `'${String(v).replace(/'/g, "''")}'`;

@@ -133,7 +133,7 @@ export function MemberFormDrawer({ open, onClose, member }: { open: boolean; onC
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
               <Label htmlFor="m-name">Full name</Label>
-              <Input id="m-name" value={fullName} onChange={(e) => setFullName(e.target.value)} required maxLength={80} />
+              <Input id="m-name" value={fullName} onChange={(e) => setFullName(e.target.value)} required maxLength={80} placeholder="e.g. Anna Schmidt" />
             </div>
             <div>
               <Label htmlFor="m-role">Company position</Label>

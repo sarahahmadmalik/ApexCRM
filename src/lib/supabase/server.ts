@@ -41,25 +41,23 @@ export async function createClient() {
  */
 export const getCurrentAppUser = cache(async () => {
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return null;
+  // The proxy already validated the session with the auth server on this request, so here the token
+  // only needs its signature checked locally (getClaims) instead of paying a second network round trip.
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const claims = claimsData?.claims;
+  if (!claims?.sub) return null;
+  const user = { id: claims.sub, email: typeof claims.email === "string" ? claims.email : undefined };
 
-  const { data: appUser } = await supabase
-    .from("app_users")
-    .select("*, workspaces(name)")
-    .eq("id", user.id)
-    .maybeSingle();
+  // Independent lookups: run them side by side (one round trip instead of two).
+  const [{ data: appUser }, { data: permissionRows }] = await Promise.all([
+    supabase.from("app_users").select("*, workspaces(name)").eq("id", user.id).maybeSingle(),
+    supabase.from("user_permissions").select("page, access").eq("user_id", user.id),
+  ]);
 
   if (!appUser || !appUser.is_active) return null;
 
   const isAdmin = appUser.account_role === "admin";
-  let stored = noPermissions();
-  if (!isAdmin) {
-    const { data: rows } = await supabase.from("user_permissions").select("page, access").eq("user_id", user.id);
-    stored = permissionsFromRows(rows ?? []);
-  }
+  const stored = isAdmin ? noPermissions() : permissionsFromRows(permissionRows ?? []);
 
   const { workspaces, ...row } = appUser as typeof appUser & { workspaces: { name: string } | null };
   return {

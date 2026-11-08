@@ -2,7 +2,9 @@
 
 import { useEffect, useState, useTransition } from "react";
 import { toast } from "sonner";
-import { RefreshCw, PauseCircle, ShieldCheck, MapPinned, Users } from "lucide-react";
+import { RefreshCw, PauseCircle, ShieldCheck, MapPinned, Users, Pencil } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { EditCityDialog } from "@/components/cities/edit-city-dialog";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { CITY_STATUS_BADGE_COLORS, CITY_STATUS_HEX, CITY_STATUS_LABELS, cn } from "@/lib/utils";
 import { Combobox } from "@/components/ui/combobox";
@@ -67,6 +69,7 @@ export function CityStatusTable({
   // so they find cities on any page (filtering just the visible page would hide almost everything).
   const [searchVal, setSearchVal] = useState(filters.q);
   const [pendingKey, setPendingKey] = useState<string | null>(null);
+  const [editing, setEditing] = useState<CityRow | null>(null);
   const canWrite = useCanWrite("cities");
   const [, startTransition] = useTransition();
 
@@ -136,8 +139,27 @@ export function CityStatusTable({
     }
   }
 
+  const editButton = (row: CityRow) => (
+    <Button
+      type="button"
+      variant="outline"
+      size="sm"
+      onClick={() => setEditing(row)}
+      aria-label={`Edit ${row.city}`}
+    >
+      <Pencil className="h-3.5 w-3.5" />
+      Edit
+    </Button>
+  );
+
   return (
     <>
+      <EditCityDialog
+        key={editing ? `${editing.country}-${editing.state}-${editing.city}` : "none"}
+        city={editing}
+        onClose={() => setEditing(null)}
+        onSaved={() => startTransition(() => router.refresh())}
+      />
       <FilterBar
         activeCount={activeFilterCount}
         onClearAll={clearAll}
@@ -248,10 +270,16 @@ export function CityStatusTable({
 
                 {/* Status is set by hand only — the tool has no way to know
                     how many firms actually exist in an area, so it can't be
-                    computed. Click the badge above to change it. */}
-                <p className="mt-4 text-xs text-gray-400 dark:text-gray-500">
-                  {row.is_manual_override ? "Status set manually" : "Not set yet. Click the status badge above to set it."}
-                </p>
+                    computed. */}
+                {row.note && (
+                  <p className="mt-3 line-clamp-2 text-xs text-gray-600 dark:text-gray-300">{row.note}</p>
+                )}
+                <div className="mt-4 flex items-center justify-between gap-2">
+                  <p className="text-xs text-gray-400 dark:text-gray-500">
+                    {row.is_manual_override ? "Status set manually" : "Not set yet."}
+                  </p>
+                  {canWrite && editButton(row)}
+                </div>
               </div>
             );
           })}
@@ -286,9 +314,10 @@ export function CityStatusTable({
           <table className="w-full min-w-[560px] table-fixed text-sm">
             <TableHead
               columns={[
-                { label: "City & region", width: "w-[46%]", sortKey: "city" },
-                { label: "Total targets", width: "w-[22%]", sortKey: "firms" },
-                { label: "Lifecycle state", width: "w-[32%]", sortKey: "status" },
+                { label: "City & region", width: canWrite ? "w-[38%]" : "w-[46%]", sortKey: "city" },
+                { label: "Total targets", width: canWrite ? "w-[20%]" : "w-[22%]", sortKey: "firms" },
+                { label: "Lifecycle state", width: canWrite ? "w-[26%]" : "w-[32%]", sortKey: "status" },
+                ...(canWrite ? [{ label: "", width: "w-[16%]" }] : []),
               ]}
               sortBy={auditSortBy}
               sortDir={auditSortDir}
@@ -297,7 +326,7 @@ export function CityStatusTable({
             <tbody className="divide-y divide-gray-100 dark:divide-white/10">
               {rows.length === 0 ? (
                 <TableEmptyState
-                  colSpan={3}
+                  colSpan={canWrite ? 4 : 3}
                   icon={MapPinned}
                   title="No cities tracked"
                   description={`No cities recorded for ${activeCountry} yet.`}
@@ -338,6 +367,7 @@ export function CityStatusTable({
                           <CityStatusBadge status={row.status} />
                         )}
                       </td>
+                      {canWrite && <td className="px-4 py-3 text-right">{editButton(row)}</td>}
                     </tr>
                   );
                 })

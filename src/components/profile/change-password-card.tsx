@@ -7,7 +7,7 @@ import { Card, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { FormRow, Input } from "@/components/ui/field";
 import { collectErrors, validateRequired } from "@/lib/validation";
-import { changePassword } from "@/app/(app)/profile/actions";
+import { changePassword } from "@/app/(app)/settings/actions";
 
 export function ChangePasswordCard() {
   const [current, setCurrent] = useState("");
@@ -20,7 +20,7 @@ export function ChangePasswordCard() {
     e.preventDefault();
     const found = collectErrors({
       current: validateRequired(current, "Current password"),
-      next: next.length >= 8 ? undefined : "New password must be at least 8 characters",
+      next: next.length >= 10 ? undefined : "New password must be at least 10 characters",
       confirm: confirm === next ? undefined : "Passwords don't match",
     });
     setErrors(found);
@@ -50,18 +50,20 @@ export function ChangePasswordCard() {
             <Input
               type="password"
               autoComplete="current-password"
+              placeholder="Enter your current password"
               value={current}
               onChange={(e) => setCurrent(e.target.value)}
             />
           </FormRow>
         </div>
         <FormRow label="New password" required error={errors.next}>
-          <Input type="password" autoComplete="new-password" value={next} onChange={(e) => setNext(e.target.value)} />
+          <Input type="password" autoComplete="new-password" value={next} onChange={(e) => setNext(e.target.value)} placeholder="At least 10 characters, letters and numbers" />
         </FormRow>
         <FormRow label="Confirm new password" required error={errors.confirm}>
           <Input
             type="password"
             autoComplete="new-password"
+            placeholder="Repeat the new password"
             value={confirm}
             onChange={(e) => setConfirm(e.target.value)}
           />

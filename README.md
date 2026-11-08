@@ -121,6 +121,14 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) — you'll land on `/login`.
 
+### AI assistant and briefing
+
+Set `OPENROUTER_KEY` (and optionally `OPENROUTER_MODEL`, default `anthropic/claude-haiku-5.5`) to turn on:
+
+- **AI briefing** on the Overview page: a management summary with risks, wins and next steps, written from live data.
+- **Dua Dev Assistant** (the "Ask AI" button next to each page title, or floating, or hidden: Settings -> AI assistant button, saved per account by `supabase/migrations/0012_assistant_placement.sql`). It answers questions from live data and can prepare changes (add a firm, update a firm/offer/invoice status, add an employee, set a city status, draft an offer). **Nothing is saved until the user clicks Confirm**, and every change goes through the same permission checks as the normal forms. It only sees pages the signed-in user can read.
+- PDF export of offers and invoices converts the filled Word template through CloudConvert (`CLOUDCONVERT_API_KEY`).
+
 ### 7. Deploying
 
 Any Node.js host works (Vercel, Railway, your own server). Set the same two env vars there. If you deploy somewhere serverless, `next.config.ts` already tells Next.js to bundle `/templates` with the functions that need it (`outputFileTracingIncludes`) — no extra config required.

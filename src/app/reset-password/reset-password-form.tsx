@@ -20,7 +20,7 @@ export function ResetPasswordForm() {
         </div>
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Set a new password</h1>
         <p className="mt-1.5 text-sm text-gray-500 dark:text-gray-400">
-          Code verified. Choose a new password of at least 8 characters. You&apos;ll be signed out of your other devices.
+          Code verified. Choose a new password of at least 10 characters with letters and numbers. You&apos;ll be signed out of your other devices.
         </p>
       </div>
 
@@ -31,7 +31,7 @@ export function ResetPasswordForm() {
             id="password"
             name="password"
             required
-            minLength={8}
+            minLength={10}
             maxLength={72}
             autoFocus
             autoComplete="new-password"
@@ -44,7 +44,7 @@ export function ResetPasswordForm() {
             id="confirm"
             name="confirm"
             required
-            minLength={8}
+            minLength={10}
             maxLength={72}
             autoComplete="new-password"
             aria-describedby={describedBy}

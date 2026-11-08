@@ -6,18 +6,18 @@
 --     promoted / re-labelled;
 --   * if it doesn't exist it is created with `initial_password` below.
 --
--- DELETE THIS FILE (or blank the password) once you have signed in — it contains a password.
--- Change the password afterwards from Profile -> Change password.
+-- Never commit a real password in this file. Change the password afterwards from Settings -> Change password.
 
 do $$
 declare
   admin_email      text := 'saramalik@dua-dev.com';
   admin_name       text := 'Sara Malik';
   company_role     text := 'CTO';
-  initial_password text := 'KbxaBdaAS3t2vU9eAa7!';
+  initial_password text := 'CHANGE_ME_BEFORE_RUNNING';
   workspace        uuid := '00000000-0000-0000-0000-00000000d0a0';  -- the default "Dua Dev" workspace
   uid              uuid;
 begin
+  if left(initial_password, 9) = 'CHANGE_ME' then raise exception 'Set a strong password in this script before running it (and never commit it).'; end if;
   select id into uid from auth.users where lower(email) = lower(admin_email);
 
   if uid is null then

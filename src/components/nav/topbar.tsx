@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Menu, ChevronDown, User, LogOut, UserCircle, ShieldCheck, Building, UsersRound } from "lucide-react";
+import { Menu, ChevronDown, User, LogOut, Settings, ShieldCheck, Building, UsersRound } from "lucide-react";
 import type { AccountRole } from "@/lib/permissions";
 import { GlobalSearch } from "@/components/nav/global-search";
 import { DropdownMenu } from "@/components/ui/dropdown-menu";
@@ -94,12 +94,12 @@ export function Topbar({
               </div>
               <div className="p-1">
                 <Link
-                  href="/profile"
+                  href="/settings"
                   onClick={close}
                   className="flex w-full cursor-pointer items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-white/5"
                 >
-                  <UserCircle className="h-4 w-4" />
-                  Profile
+                  <Settings className="h-4 w-4" />
+                  Settings
                 </Link>
                 {accountRole === "admin" && (
                   <Link

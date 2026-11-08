@@ -3,7 +3,7 @@
 -- only the workspace admin can open it).
 --
 --   Email:    info@dua-dev.com
---   Password: !Duresameen8989
+--   Password: set `user_password` below before running (never commit a real password)
 --
 -- Run in Supabase Dashboard -> SQL Editor, AFTER migrations/0009 (or supabase/schema.sql) and after
 -- scripts/create_admin_saramalik.sql. Safe to run more than once:
@@ -11,18 +11,18 @@
 --     page permissions are (re)set;
 --   * otherwise it is created with the password above.
 --
--- DELETE THIS FILE (or blank the password) once he has signed in — it contains a password. Ask him to change
--- it from Profile -> Change password.
+-- Never commit a real password in this file. Ask him to change it from Settings -> Change password.
 
 do $$
 declare
   user_email    text := 'info@dua-dev.com';
   user_name     text := 'Omer Farooq';
   company_role  text := 'CEO';
-  user_password text := '!Duresameen8989';
+  user_password text := 'CHANGE_ME_BEFORE_RUNNING';
   workspace     uuid;
   uid           uuid;
 begin
+  if left(user_password, 9) = 'CHANGE_ME' then raise exception 'Set a strong password in this script before running it (and never commit it).'; end if;
   -- Same workspace as the admin (falls back to the default workspace).
   select workspace_id into workspace from app_users where account_role = 'admin' and is_active order by created_at limit 1;
   workspace := coalesce(workspace, '00000000-0000-0000-0000-00000000d0a0');

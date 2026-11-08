@@ -151,7 +151,7 @@ export function ContractFormDialog({
             />
           </FormRow>
           <FormRow label="Position">
-            <Input name="position" key={employeeId ?? "none"} defaultValue={selected?.position ?? ""} />
+            <Input name="position" key={employeeId ?? "none"} defaultValue={selected?.position ?? ""} placeholder="e.g. Senior Frontend Developer" />
           </FormRow>
           <ContractDurationFields
             value={duration}
@@ -179,7 +179,7 @@ export function ContractFormDialog({
             </div>
           </FormRow>
           <FormRow label="Notes">
-            <Textarea name="notes" rows={3} />
+            <Textarea name="notes" rows={3} placeholder="Anything else to include in the contract" />
           </FormRow>
         </div>
       </form>

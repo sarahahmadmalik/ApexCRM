@@ -7,7 +7,7 @@ import { MapPin, Pencil, Check, X, Loader2 } from "lucide-react";
 import { Combobox } from "@/components/ui/combobox";
 import { CountryFlag } from "@/components/ui/country-flag";
 import { COUNTRY_NAMES } from "@/lib/data/geo";
-import { updateMyLocation } from "@/app/(app)/profile/actions";
+import { updateMyLocation } from "@/app/(app)/settings/actions";
 
 const COUNTRY_OPTIONS = COUNTRY_NAMES.map((c) => ({ value: c, label: c }));
 

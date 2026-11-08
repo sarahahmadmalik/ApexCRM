@@ -86,6 +86,7 @@ export function ResetPasswordDialog({ member, onClose }: { member: MemberRow | n
             <div className="flex gap-2">
               <Input
                 id="reset-pw"
+                placeholder="At least 10 characters"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required

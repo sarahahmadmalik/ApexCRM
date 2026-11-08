@@ -5,6 +5,9 @@ import { usePathname } from "next/navigation";
 import { Sidebar } from "@/components/nav/sidebar";
 import { Topbar } from "@/components/nav/topbar";
 import { LiveRefresh } from "@/components/nav/live-refresh";
+import { AssistantPanel } from "@/components/ai/assistant-panel";
+import { AssistantProvider, FloatingAssistantButton } from "@/components/ai/assistant-launchers";
+import type { AssistantPlacement } from "@/app/(app)/ai/actions";
 import { PermissionsProvider } from "@/components/auth/permissions-provider";
 import { ViewOnlyNotice } from "@/components/ui/view-only-notice";
 import { PAGES, hasAccess, pageForPath, type AccountRole, type Permissions } from "@/lib/permissions";
@@ -24,6 +27,8 @@ export function AppShell({
   workspaceName,
   permissions,
   userEmail,
+  aiEnabled = false,
+  assistantPlacement = "header",
   children,
 }: {
   userName: string;
@@ -34,6 +39,10 @@ export function AppShell({
   workspaceName: string;
   permissions: Permissions;
   userEmail: string;
+  /** True when OPENROUTER_KEY is configured: shows the floating AI assistant. */
+  aiEnabled?: boolean;
+  /** Where this user keeps the assistant button (saved on their account). */
+  assistantPlacement?: AssistantPlacement;
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
@@ -58,6 +67,7 @@ export function AppShell({
 
   return (
     <PermissionsProvider permissions={permissions}>
+    <AssistantProvider enabled={aiEnabled} userName={userName} initialPlacement={assistantPlacement}>
     <LiveRefresh />
     <div className="min-h-screen bg-[var(--background)]">
       <Sidebar
@@ -95,6 +105,9 @@ export function AppShell({
         </main>
       </div>
     </div>
+    {aiEnabled && <AssistantPanel />}
+    <FloatingAssistantButton />
+    </AssistantProvider>
     </PermissionsProvider>
   );
 }

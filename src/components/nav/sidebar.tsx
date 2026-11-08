@@ -14,6 +14,7 @@ import {
   LogOut,
   X,
   UsersRound,
+  Settings,
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
@@ -190,7 +191,26 @@ export function Sidebar({
 
 
 
-        <div className="mt-auto border-t border-white/10 p-3">
+        <div className="mt-auto space-y-0.5 border-t border-white/10 p-3">
+          <Link
+            href="/settings"
+            title={isCompressed ? "Settings" : undefined}
+            className={cn(
+              "group relative flex items-center gap-3 rounded-lg py-2.5 text-sm font-medium transition-all duration-150",
+              isCompressed ? "justify-center px-0" : "px-3",
+              isActive("/settings")
+                ? cn("nav-active-bar bg-white/10 text-white", isCompressed && "nav-active-bar-compact")
+                : "text-white/55 hover:bg-white/5 hover:text-white/90"
+            )}
+          >
+            <Settings
+              className={cn(
+                "h-5 w-5 shrink-0 transition-all duration-300 group-hover:rotate-45",
+                isActive("/settings") ? "text-brand-400" : "text-white/40 group-hover:text-white/70"
+              )}
+            />
+            {!isCompressed && <span className="truncate">Settings</span>}
+          </Link>
           <form action={signOut}>
             <button
               type="submit"

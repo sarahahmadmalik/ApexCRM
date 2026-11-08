@@ -86,6 +86,7 @@ export function LineItemsEditor({
                     value={item.unit_price}
                     onChange={(e) => updateRow(i, { unit_price: parseFloat(e.target.value) || 0 })}
                     onBlur={() => autoCalcTotal(i)}
+                    placeholder="0.00"
                   />
                 </td>
                 <td className="px-3 py-2">
@@ -94,6 +95,7 @@ export function LineItemsEditor({
                     step="0.01"
                     value={item.total}
                     onChange={(e) => updateRow(i, { total: parseFloat(e.target.value) || 0 })}
+                    placeholder="0.00"
                   />
                 </td>
                 <td className="px-1 py-2 text-center">

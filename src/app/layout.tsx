@@ -4,7 +4,7 @@ import { TooltipLayer } from "@/components/ui/tooltip-layer";
 import { ThemeProvider } from "@/components/theme/theme-provider";
 import { themeNoFlashScript } from "@/components/theme/theme-script";
 import { getCurrentAppUser } from "@/lib/supabase/server";
-import { updateThemePreference } from "@/app/(app)/profile/actions";
+import { updateThemePreference } from "@/app/(app)/settings/actions";
 import "@fontsource/poppins/500.css";
 import "@fontsource/poppins/600.css";
 import "@fontsource/poppins/700.css";
@@ -14,6 +14,7 @@ import "@fontsource/inter/500.css";
 import "@fontsource/inter/600.css";
 import "@fontsource/jetbrains-mono/400.css";
 import "./globals.css";
+import "./dino.css";
 
 export const metadata: Metadata = {
   title: "Dua Dev Internal Tool",
@@ -27,7 +28,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
   const accountTheme = appUser?.theme_preference ?? null;
 
   return (
-    <html lang="en" className="h-full antialiased" suppressHydrationWarning>
+    <html lang="en" className="h-full antialiased" data-scroll-behavior="smooth" suppressHydrationWarning>
       <head>
         <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
         {/* Sets the `dark` class before first paint so there's no flash of

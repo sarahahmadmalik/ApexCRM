@@ -3,7 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { calcTotals, formatCurrency, formatDate } from "@/lib/utils";
 import { renderDocxTemplate } from "@/lib/documents/generate";
-import { renderPdf } from "@/lib/documents/pdf";
+import { convertDocxToPdf } from "@/lib/documents/convert";
 import { storeAndSign, slug, type DocumentFormat } from "@/lib/documents/storage";
 import type { AngebotStatus, LineItem } from "@/lib/types/database";
 import { assertAccess } from "@/lib/auth/guards";
@@ -129,44 +129,26 @@ export async function downloadAngebotDocument(id: string, format: DocumentFormat
     total: formatCurrency(li.total),
   }));
 
-  const buffer =
-    format === "docx"
-      ? renderDocxTemplate("angebot-template.docx", {
-          salutation,
-          signer_name: SIGNER_NAME,
-          firm_name: firm.name,
-          firm_department: "",
-          contact_name: firm.contact_name ?? "",
-          firm_address_line: "",
-          firm_postal_city: `${firm.city}, ${firm.country}`,
-          angebot_number: angebot.angebot_number,
-          issue_date: formatDate(angebot.issue_date),
-          customer_number: customerNumber,
-          valid_until: formatDate(angebot.valid_until),
-          vat_rate: angebot.vat_rate,
-          net_amount: formatCurrency(angebot.net_amount),
-          vat_amount: formatCurrency(angebot.vat_amount),
-          total_amount: formatCurrency(angebot.total_amount),
-          items,
-        })
-      : await renderPdf({
-          title: "Angebot",
-          recipient: [firm.name, ...(firm.contact_name ? [firm.contact_name] : []), `${firm.city}, ${firm.country}`],
-          meta: [
-            ["Angebotsnummer", angebot.angebot_number],
-            ["Datum", formatDate(angebot.issue_date)],
-            ["Kundennummer", customerNumber],
-            ["Gültig bis", formatDate(angebot.valid_until)],
-          ],
-          intro: [salutation, "vielen Dank für Ihr Interesse. Gerne unterbreiten wir Ihnen folgendes Angebot:"],
-          items: { labels: ["Pos.", "Beschreibung", "Menge", "Einzelpreis", "Gesamt"], rows: items },
-          totals: [
-            { label: "Nettobetrag", value: formatCurrency(angebot.net_amount) },
-            { label: `zzgl. ${angebot.vat_rate}% USt.`, value: formatCurrency(angebot.vat_amount) },
-            { label: "Gesamtbetrag", value: formatCurrency(angebot.total_amount), strong: true },
-          ],
-          closing: ["Wir freuen uns auf Ihre Rückmeldung.", "Mit freundlichen Grüßen", SIGNER_NAME],
-        });
+  const docx = renderDocxTemplate("angebot-template.docx", {
+    salutation,
+    signer_name: SIGNER_NAME,
+    firm_name: firm.name,
+    firm_department: "",
+    contact_name: firm.contact_name ?? "",
+    firm_address_line: "",
+    firm_postal_city: `${firm.city}, ${firm.country}`,
+    angebot_number: angebot.angebot_number,
+    issue_date: formatDate(angebot.issue_date),
+    customer_number: customerNumber,
+    valid_until: formatDate(angebot.valid_until),
+    vat_rate: angebot.vat_rate,
+    net_amount: formatCurrency(angebot.net_amount),
+    vat_amount: formatCurrency(angebot.vat_amount),
+    total_amount: formatCurrency(angebot.total_amount),
+    items,
+  });
+  // PDFs are the same filled Word template, converted — so both formats match it exactly.
+  const buffer = format === "docx" ? docx : await convertDocxToPdf(docx, "angebot.docx");
 
   const filePath = `angebots/${angebot.angebot_number}.${format}`;
   const url = await storeAndSign(

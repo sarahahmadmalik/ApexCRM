@@ -60,3 +60,15 @@ export function resetCookieOptions(maxAgeSeconds: number) {
     maxAge: maxAgeSeconds,
   };
 }
+
+/** Short-lived flag read by the signed-in layout to play the logo loader once right after signing in. */
+export const JUST_SIGNED_IN_COOKIE = "dd_just_signed_in";
+export function justSignedInCookieOptions() {
+  return {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax" as const,
+    path: "/",
+    maxAge: 20,
+  };
+}

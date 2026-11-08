@@ -3,6 +3,9 @@ import { Card, CardHeader } from "@/components/ui/card";
 import { DownloadMenu } from "@/components/ui/download-menu";
 import { Badge } from "@/components/ui/badge";
 import { AppearanceCard } from "@/components/profile/appearance-card";
+import { PageHeader } from "@/components/ui/page-header";
+import { SettingsTabs, type SettingsTab } from "@/components/profile/settings-tabs";
+import { AssistantCard } from "@/components/profile/assistant-card";
 import { ChangePasswordCard } from "@/components/profile/change-password-card";
 import { LocationTile } from "@/components/profile/location-tile";
 import { getCurrentAppUser, createClient } from "@/lib/supabase/server";
@@ -10,7 +13,8 @@ import { downloadContractDocument } from "@/app/(app)/employees/actions";
 import { EMPLOYMENT_TYPE_LABELS, formatDate, formatSalary } from "@/lib/utils";
 import { redirect } from "next/navigation";
 
-export default async function ProfilePage() {
+export default async function SettingsPage({ searchParams }: { searchParams: Promise<{ tab?: string }> }) {
+  const { tab } = await searchParams;
   const appUser = await getCurrentAppUser();
   if (!appUser) redirect("/login");
 
@@ -33,13 +37,13 @@ export default async function ProfilePage() {
         .maybeSingle()
     : { data: null };
 
-  return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="font-display text-xl font-semibold text-gray-900 dark:text-gray-100">Profile</h1>
-        <p className="text-sm text-gray-500 dark:text-gray-400">Your account on the Dua Dev internal tool.</p>
-      </div>
-
+  const aiEnabled = !!process.env.OPENROUTER_KEY;
+  const tabs: SettingsTab[] = [
+    {
+      id: "account",
+      label: "Account",
+      content: (
+        <>
       <Card>
         <CardHeader title="Account" description={`Your access in the ${appUser.workspaceName} workspace, managed by the workspace admin.`} />
         <div className="flex items-center gap-4 p-5">
@@ -60,7 +64,14 @@ export default async function ProfilePage() {
           </div>
         </div>
       </Card>
-
+        </>
+      ),
+    },
+    {
+      id: "employment",
+      label: "Employment",
+      content: (
+        <>
       <Card>
         <CardHeader
           title="Employment"
@@ -137,9 +148,18 @@ export default async function ProfilePage() {
           </div>
         )}
       </Card>
+        </>
+      ),
+    },
+    { id: "appearance", label: "Appearance", content: <AppearanceCard /> },
+    ...(aiEnabled ? [{ id: "assistant" as const, label: "AI assistant", content: <AssistantCard /> }] : []),
+    { id: "security", label: "Security", content: <ChangePasswordCard /> },
+  ];
 
-      <AppearanceCard />
-      <ChangePasswordCard />
+  return (
+    <div>
+      <PageHeader title="Settings" description="Your account, appearance and security on the Dua Dev internal tool." />
+      <SettingsTabs tabs={tabs} initialTab={tab} />
     </div>
   );
 }

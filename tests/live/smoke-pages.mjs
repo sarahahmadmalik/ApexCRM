@@ -72,14 +72,14 @@ async function crawl(label, { email, password }, paths, expected404 = []) {
 
 const common = [
   "/overview", "/overview?country=Germany", "/overview?country=Spain", "/overview?country=Netherlands", "/firms", "/firms?page=2",
-  "/firms?country=Netherlands&status=sent", "/cities", "/cities?country=Sweden", "/cities?country=Sweden&status=in_progress", "/cities?country=Germany&q=k%C3%B6ln&state=North%20Rhine-Westphalia", "/cities?country=Spain&page=3", "/cities?country=Nowhere", "/employees", "/contracts", "/offers", "/invoices", "/profile",
+  "/firms?country=Netherlands&status=sent", "/cities", "/cities?country=Sweden", "/cities?country=Sweden&status=in_progress", "/cities?country=Germany&q=k%C3%B6ln&state=North%20Rhine-Westphalia", "/cities?country=Spain&page=3", "/cities?country=Nowhere", "/employees", "/contracts", "/offers", "/invoices", "/settings",
 ];
 const results = [];
 try {
   const member = await makeUser({ admin: false });
   results.push(...(await crawl("member", member, [...common, "/user-management", "/this-page-does-not-exist"], ["/user-management", "/this-page-does-not-exist"])));
   const admin = await makeUser({ admin: true });
-  results.push(...(await crawl("admin", admin, ["/user-management", "/profile"])));
+  results.push(...(await crawl("admin", admin, ["/user-management", "/settings"])));
 } finally {
   for (const id of created.users) await service.auth.admin.deleteUser(id);
   for (const id of created.workspaces) await service.from("workspaces").delete().eq("id", id);
