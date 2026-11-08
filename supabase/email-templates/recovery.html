@@ -1,0 +1,18 @@
+<!--
+  Supabase "Reset Password" email template (OTP version).
+  Paste into: Supabase Dashboard -> Authentication -> Emails -> Templates -> Reset Password.
+  Subject suggestion: "Your Dua Dev verification code"
+  The app's /verify-otp page expects the code from {{ .Token }} (no magic link).
+-->
+<div style="font-family:Inter,Arial,sans-serif;max-width:480px;margin:0 auto;padding:32px;color:#0f172a">
+  <h2 style="margin:0 0 8px;font-size:20px">Reset your password</h2>
+  <p style="margin:0 0 24px;font-size:14px;color:#475569">
+    Use this code to reset your Dua Dev internal tool password. It expires in 1 hour.
+  </p>
+  <p style="margin:0 0 24px;padding:16px;text-align:center;font-family:'Courier New',monospace;font-size:32px;font-weight:700;letter-spacing:8px;background:#f1f5f9;border-radius:8px">
+    {{ .Token }}
+  </p>
+  <p style="margin:0;font-size:12px;color:#64748b">
+    If you didn't request this, you can ignore this email. Never share this code with anyone.
+  </p>
+</div>

@@ -1,0 +1,317 @@
+@import "tailwindcss";
+
+/* Class-based dark mode (Tailwind v4): `dark:` utilities apply once a `dark`
+   class lands on <html> or an ancestor. Toggled by ThemeProvider; see
+   src/components/theme/theme-provider.tsx. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  --sidebar-width: 240px;
+  --topbar-height: 72px;
+
+  /* Dua Dev brand — deep navy + electric cyan */
+  --color-brand-50: #ecfeff;
+  --color-brand-100: #cffafe;
+  --color-brand-200: #a5f3fc;
+  --color-brand-300: #67e8f9;
+  --color-brand-400: #22d3ee;
+  --color-brand-500: #06b6d4;
+  --color-brand-600: #0891b2;
+  --color-brand-700: #0e7490;
+  --color-brand-800: #155e75;
+  --color-brand-900: #0f172a;
+  --color-brand-950: #0b132b;
+
+  /* Navy chrome (sidebar / dark surfaces) */
+  --color-navy-950: #0b132b;
+  --color-navy-900: #0f172a;
+  --color-navy-800: #131b2e;
+  --color-navy-700: #1e293b;
+
+  /* Outreach status tokens */
+  --color-status-not_started: #64748b;
+  --color-status-in_progress: #2563eb;
+  --color-status-sent: #f59e0b;
+  --color-status-responded: #8b5cf6;
+  --color-status-negotiation: #0891b2;
+  --color-status-client: #10b981;
+}
+
+.dark {
+  /* Page canvas: a grey-blue slate, deliberately lighter than the sidebar
+     (navy-950) so the chrome and the content area read as separate layers. */
+  --background: #151d2e;
+  --foreground: #e2e8f0;
+
+  /* Card / input surfaces in dark mode — tuning these two re-skins every
+     `dark:bg-navy-800` / `dark:bg-navy-700` in the app. */
+  --color-navy-800: #1c2539;
+  --color-navy-700: #26314a;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: "Inter", Arial, Helvetica, sans-serif;
+  --font-display: "Poppins", Arial, Helvetica, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+  --color-brand-50: var(--color-brand-50);
+  --color-brand-100: var(--color-brand-100);
+  --color-brand-200: var(--color-brand-200);
+  --color-brand-300: var(--color-brand-300);
+  --color-brand-400: var(--color-brand-400);
+  --color-brand-500: var(--color-brand-500);
+  --color-brand-600: var(--color-brand-600);
+  --color-brand-700: var(--color-brand-700);
+  --color-brand-800: var(--color-brand-800);
+  --color-brand-900: var(--color-brand-900);
+  --color-brand-950: var(--color-brand-950);
+
+  --color-navy-950: var(--color-navy-950);
+  --color-navy-900: var(--color-navy-900);
+  --color-navy-800: var(--color-navy-800);
+  --color-navy-700: var(--color-navy-700);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+}
+
+h1, h2, h3, .font-display {
+  font-family: var(--font-display), Arial, Helvetica, sans-serif;
+}
+
+.font-mono-brand {
+  font-family: var(--font-mono), ui-monospace, monospace;
+}
+
+/* ─── Slide-over drawer (from right) ─────────────────────────── */
+@keyframes slide-over-in {
+  from { transform: translateX(100%); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
+}
+.slide-over-panel {
+  animation: slide-over-in 200ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ─── Dropdown / popover ──────────────────────────────────────── */
+@keyframes dropdown-menu-in {
+  from { opacity: 0; transform: translateY(-6px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0)    scale(1);    }
+}
+.dropdown-menu-pop {
+  animation: dropdown-menu-in 130ms cubic-bezier(0.22, 1, 0.36, 1);
+  transform-origin: top center;
+}
+
+/* ─── Custom tooltip (see components/ui/tooltip-layer.tsx) ─────── */
+@keyframes tooltip-in {
+  from { opacity: 0; margin-top: 3px; }
+  to   { opacity: 1; margin-top: 0; }
+}
+.tooltip-pop { animation: tooltip-in 120ms ease-out both; }
+
+/* ─── Page / content fade-in ─────────────────────────────────── */
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0);   }
+}
+.animate-fade-in {
+  animation: fade-in 200ms ease-out both;
+}
+
+/* ─── Staggered sidebar nav item entrance ────────────────────── */
+@keyframes nav-item-in {
+  from { opacity: 0; transform: translateX(-8px); }
+  to   { opacity: 1; transform: translateX(0);    }
+}
+.nav-item-stagger > * {
+  animation: nav-item-in 220ms ease-out both;
+}
+.nav-item-stagger > *:nth-child(1)  { animation-delay:  30ms; }
+.nav-item-stagger > *:nth-child(2)  { animation-delay:  60ms; }
+.nav-item-stagger > *:nth-child(3)  { animation-delay:  90ms; }
+.nav-item-stagger > *:nth-child(4)  { animation-delay: 120ms; }
+.nav-item-stagger > *:nth-child(5)  { animation-delay: 150ms; }
+.nav-item-stagger > *:nth-child(6)  { animation-delay: 180ms; }
+.nav-item-stagger > *:nth-child(7)  { animation-delay: 210ms; }
+.nav-item-stagger > *:nth-child(8)  { animation-delay: 240ms; }
+
+/* ─── Stat card entrance ─────────────────────────────────────── */
+@keyframes card-in {
+  from { opacity: 0; transform: translateY(8px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0)   scale(1);    }
+}
+.card-in   { animation: card-in 240ms cubic-bezier(0.22, 1, 0.36, 1) both; }
+.card-in-1 { animation-delay:  40ms; }
+.card-in-2 { animation-delay:  80ms; }
+.card-in-3 { animation-delay: 120ms; }
+.card-in-4 { animation-delay: 160ms; }
+.card-in-5 { animation-delay: 200ms; }
+.card-in-6 { animation-delay: 240ms; }
+
+/* ─── Pulse ring (map city dot) ─────────────────────────────── */
+@keyframes pulse-ring {
+  0%   { transform: scale(1);   opacity: 0.7; }
+  100% { transform: scale(2.4); opacity: 0;   }
+}
+.pulse-ring { animation: pulse-ring 1.5s ease-out infinite; }
+
+/* ─── Scale-bounce (status badge update) ────────────────────── */
+@keyframes scale-pulse {
+  0%   { transform: scale(1);    }
+  40%  { transform: scale(1.12); }
+  70%  { transform: scale(0.96); }
+  100% { transform: scale(1);    }
+}
+.animate-scale-pulse { animation: scale-pulse 220ms ease-out; }
+
+/* ─── 3px left accent bar for active sidebar nav item ────────── */
+.nav-active-bar {
+  position: relative;
+}
+.nav-active-bar::before {
+  content: "";
+  position: absolute;
+  left: -0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 60%;
+  border-radius: 0 2px 2px 0;
+  background: #06b6d4;
+}
+/* Collapsed rail: the nav sits at px-2 instead of px-3, so pull the bar in
+   to keep it flush against the sidebar edge rather than floating off it. */
+.nav-active-bar-compact::before {
+  left: -0.5rem;
+  height: 70%;
+}
+
+/* ─── Skeleton shimmer (loading placeholders) ────────────────── */
+@keyframes skeleton-shimmer {
+  0%   { opacity: 1;    }
+  50%  { opacity: 0.45; }
+  100% { opacity: 1;    }
+}
+.animate-skeleton { animation: skeleton-shimmer 1.4s ease-in-out infinite; }
+
+/* ─── Hide scrollbar but keep scrolling (tab strips) ─────────── */
+.no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+
+/* ─── Monospace chip (IDs, auto-numbers) ─────────────────────── */
+.mono-chip {
+  font-family: var(--font-mono), ui-monospace, monospace;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+/* ─── Status filter pill ─────────────────────────────────────── */
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.625rem;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 120ms ease;
+  border: 1px solid #e2e8f0;
+  white-space: nowrap;
+  background: #ffffff;
+  color: #64748b;
+  user-select: none;
+}
+.status-pill:hover { background: #f8fafc; border-color: #cbd5e1; }
+.status-pill.active {
+  background: #0f172a;
+  color: #ffffff;
+  border-color: #0f172a;
+}
+
+/* ─── iOS-style toggle switch ───────────────────────────────── */
+.toggle-switch {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+}
+.toggle-switch input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.toggle-track {
+  width: 36px;
+  height: 20px;
+  border-radius: 9999px;
+  background: #cbd5e1;
+  transition: background 200ms ease;
+  position: relative;
+  flex-shrink: 0;
+}
+.toggle-thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+  transition: transform 200ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.toggle-switch input:checked ~ .toggle-track { background: #06b6d4; }
+.toggle-switch input:checked ~ .toggle-track .toggle-thumb {
+  transform: translateX(16px);
+}
+
+/* ─── Themed scrollbar ────────────────────────────────────────
+   Firefox via `scrollbar-color`, everything else via the WebKit
+   pseudo-elements. Light/dark tokens follow the same `.dark` class the rest
+   of the theme uses, so the scrollbar never looks like unstyled chrome next
+   to a themed page. Applied globally — individual scroll containers
+   (tables, dropdowns, the sidebar nav) inherit it automatically. */
+:root {
+  --scrollbar-thumb: #cbd5e1;
+  --scrollbar-thumb-hover: #94a3b8;
+  --scrollbar-track: transparent;
+}
+.dark {
+  --scrollbar-thumb: #334155;
+  --scrollbar-thumb-hover: #475569;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+}
+::-webkit-scrollbar-thumb {
+  background-color: var(--scrollbar-thumb);
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--scrollbar-thumb-hover);
+}
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
