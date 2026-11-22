@@ -100,3 +100,36 @@ export async function deleteCandidate(id: string) {
   if (error) throw new Error(error.message);
   revalidatePath("/hiring");
 }
+
+/** Promotes a candidate to the Employees roster and marks their ATS stage as 'hired'. */
+export async function promoteCandidateToEmployee(input: {
+  candidate_id: string;
+  full_name: string;
+  email: string;
+  phone?: string | null;
+  position: string;
+  employment_type?: EmploymentType;
+}) {
+  await assertAccess("hiring", "write");
+  const supabase = await createClient();
+
+  const { error: empError } = await supabase.from("employees").insert({
+    full_name: input.full_name.trim(),
+    email: input.email.trim(),
+    phone: input.phone?.trim() || null,
+    position: input.position.trim() || "Team Member",
+    country: "Germany",
+    employment_type: input.employment_type ?? "full_time",
+    contract_start_date: new Date().toISOString().slice(0, 10),
+  });
+  if (empError) throw new Error(empError.message);
+
+  const { error: stageError } = await supabase
+    .from("job_candidates")
+    .update({ stage: "hired" })
+    .eq("id", input.candidate_id);
+  if (stageError) throw new Error(stageError.message);
+
+  revalidatePath("/hiring");
+  revalidatePath("/employees");
+}

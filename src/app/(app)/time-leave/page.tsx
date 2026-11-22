@@ -3,23 +3,53 @@ import { createClient } from "@/lib/supabase/server";
 import { requirePageAccess } from "@/lib/auth/guards";
 import { PageHeader } from "@/components/ui/page-header";
 import { StatCard } from "@/components/ui/card";
-import { TimeLeaveBoard } from "@/components/time-leave/time-leave-board";
+import { TimeLeaveBoard, type EmployeeCompensationProfile } from "@/components/time-leave/time-leave-board";
 import { DEMO_LEAVE_REQUESTS, DEMO_TIMESHEETS } from "@/lib/data/showcase-seed";
+import { EMPLOYMENT_TYPE_LABELS } from "@/lib/utils";
 
-export const metadata = { title: "Time & Leave · ApexCRM" };
+export const metadata = { title: "Time, Leave & Employee Portal" };
 
 export default async function TimeLeavePage() {
-  await requirePageAccess("time_leave");
+  const appUser = await requirePageAccess("time_leave");
   const supabase = await createClient();
 
-  const [leavesRes, timesheetsRes] = await Promise.all([
+  const [leavesRes, timesheetsRes, employeeRes] = await Promise.all([
     supabase.from("leave_requests").select("*").order("start_date", { ascending: false }),
     supabase.from("timesheets").select("*").order("work_date", { ascending: false }),
+    appUser.email
+      ? supabase.from("employees").select("*").eq("email", appUser.email).maybeSingle()
+      : Promise.resolve({ data: null }),
   ]);
 
   const isDemoFallback = Boolean(leavesRes.error || timesheetsRes.error);
   const leaves = isDemoFallback ? DEMO_LEAVE_REQUESTS : (leavesRes.data ?? []);
   const timesheets = isDemoFallback ? DEMO_TIMESHEETS : (timesheetsRes.data ?? []);
+
+  const emp = employeeRes.data;
+  const monthlyGross =
+    emp?.salary_amount != null
+      ? emp.salary_period === "year"
+        ? Math.round(emp.salary_amount / 12)
+        : emp.salary_amount
+      : 7200;
+  const taxAndSocial = Math.round(monthlyGross * 0.32);
+
+  const employeeProfile: EmployeeCompensationProfile = {
+    fullName: emp?.full_name ?? appUser.full_name,
+    email: appUser.email ?? "employee@apexcrm.io",
+    position: emp?.position ?? appUser.role ?? "Senior Full-Stack Engineer",
+    department: "Engineering & Delivery",
+    location: emp?.country ? `${emp.country} (Hybrid)` : "Berlin, Germany (Hybrid)",
+    employmentType: emp?.employment_type ? EMPLOYMENT_TYPE_LABELS[emp.employment_type] : "Full-time",
+    contractStart: emp?.contract_start_date ?? "2025-03-01",
+    contractRef: emp?.id ? `CTR-${emp.id.slice(0, 6).toUpperCase()}` : "CTR-84A920",
+    monthlyGross,
+    taxAndSocial,
+    monthlyNet: monthlyGross - taxAndSocial,
+    ibanMasked: "DE89 3704 •••• •••• 4102",
+    annualLeaveQuota: 28,
+    remoteWorkQuota: 20,
+  };
 
   const pendingLeaves = leaves.filter((l) => l.status === "pending").length;
   const approvedDays = leaves
@@ -34,8 +64,8 @@ export default async function TimeLeavePage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Time, Attendance & Leave Management"
-        description="Manage employee PTO approvals, remote work schedules, and billable project timesheets."
+        title="Time, Leave & Employee Self-Service"
+        description="Live work timer, PTO quota & leave submissions, personal salary & payslip statements, and manager approval workflows."
       />
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -69,7 +99,13 @@ export default async function TimeLeavePage() {
         />
       </div>
 
-      <TimeLeaveBoard initialLeaves={leaves} initialTimesheets={timesheets} isDemoFallback={isDemoFallback} />
+      <TimeLeaveBoard
+        initialLeaves={leaves}
+        initialTimesheets={timesheets}
+        isDemoFallback={isDemoFallback}
+        isBoss={appUser.isAdmin}
+        employeeProfile={employeeProfile}
+      />
     </div>
   );
 }

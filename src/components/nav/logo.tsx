@@ -41,7 +41,7 @@ export function Logo({
   return (
     <svg
       className={className}
-      viewBox="0 0 185 48"
+      viewBox="0 0 150 48"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       role="img"
@@ -57,7 +57,7 @@ export function Logo({
         fill={accent}
       />
 
-      {/* Clean, tag-free logotype */}
+      {/* Clean, tag-free logotype without dot */}
       <text
         x="52"
         y="35"
@@ -69,7 +69,6 @@ export function Logo({
       >
         apex
       </text>
-      <circle cx="138" cy="31" r="3.5" fill={accent} />
     </svg>
   );
 }

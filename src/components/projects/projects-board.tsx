@@ -106,6 +106,7 @@ export function ProjectsBoard({
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [showAddProject, setShowAddProject] = useState(false);
   const [showAddTask, setShowAddTask] = useState(false);
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
 
   const projectById = useMemo(() => new Map(projects.map((p) => [p.id, p])), [projects]);
 
@@ -294,7 +295,10 @@ export function ProjectsBoard({
                           </span>
                         )}
                       </div>
-                      <h3 className="font-display mt-1.5 text-lg font-bold text-gray-900 dark:text-gray-100">
+                      <h3
+                        onClick={() => setSelectedProject(project)}
+                        className="font-display mt-1.5 cursor-pointer text-lg font-bold text-gray-900 hover:text-brand-600 dark:text-gray-100 dark:hover:text-brand-400"
+                      >
                         {project.name}
                       </h3>
                     </div>
@@ -372,13 +376,20 @@ export function ProjectsBoard({
                   <div className="flex items-center gap-1.5">
                     <Button
                       size="sm"
+                      variant="outline-brand"
+                      onClick={() => setSelectedProject(project)}
+                    >
+                      Project Deep-Dive
+                    </Button>
+                    <Button
+                      size="sm"
                       variant="outline"
                       onClick={() => {
                         setProjectFilter(project.id);
                         setTab("kanban");
                       }}
                     >
-                      View Tasks
+                      Sprint Board
                     </Button>
                     {canWrite && (
                       <button
@@ -555,7 +566,189 @@ export function ProjectsBoard({
         isDemoFallback={isDemoFallback}
         onCreated={(t) => setTasks((cur) => [t, ...cur])}
       />
+
+      <ProjectDeepDiveDrawer
+        project={selectedProject ? (projects.find((p) => p.id === selectedProject.id) ?? selectedProject) : null}
+        tasks={tasks.filter((t) => t.project_id === selectedProject?.id)}
+        canWrite={canWrite}
+        onClose={() => setSelectedProject(null)}
+        onTaskStatusChange={handleTaskStatus}
+        onAddTask={() => {
+          setShowAddTask(true);
+        }}
+      />
     </div>
+  );
+}
+
+function ProjectDeepDiveDrawer({
+  project,
+  tasks,
+  canWrite,
+  onClose,
+  onTaskStatusChange,
+  onAddTask,
+}: {
+  project: Project | null;
+  tasks: ProjectTask[];
+  canWrite: boolean;
+  onClose: () => void;
+  onTaskStatusChange: (task: ProjectTask, status: TaskStatus) => void;
+  onAddTask: () => void;
+}) {
+  if (!project) return null;
+
+  const remainingBudget = Math.max(0, project.budget - project.spent);
+  const burnPct = project.budget > 0 ? Math.min(100, Math.round((project.spent / project.budget) * 100)) : 0;
+  const estMarginPct = project.budget > 0 ? Math.max(12, 100 - burnPct + Math.round(project.progress * 0.25)) : 32;
+  const totalHours = tasks.reduce((s, t) => s + Number(t.estimated_hours ?? 0), 0);
+  const completedHours = tasks
+    .filter((t) => t.status === "done")
+    .reduce((s, t) => s + Number(t.estimated_hours ?? 0), 0);
+
+  // Group workload by assignee
+  const byAssignee = new Map<string, { total: number; done: number; hours: number }>();
+  for (const t of tasks) {
+    const name = t.assignee_name || "Unassigned";
+    const cur = byAssignee.get(name) ?? { total: 0, done: 0, hours: 0 };
+    cur.total += 1;
+    if (t.status === "done") cur.done += 1;
+    cur.hours += Number(t.estimated_hours ?? 0);
+    byAssignee.set(name, cur);
+  }
+
+  return (
+    <Dialog
+      open={!!project}
+      onClose={onClose}
+      title={project.name}
+      description={`${project.client_name ?? "Internal Initiative"} · Lead: ${project.owner_name}`}
+      position="right"
+      size="xl"
+      footer={
+        <div className="flex items-center justify-between gap-3">
+          {canWrite ? (
+            <Button variant="outline-brand" onClick={onAddTask}>
+              <Plus className="h-4 w-4" />
+              Add Milestone / Task
+            </Button>
+          ) : (
+            <span />
+          )}
+          <Button variant="outline" onClick={onClose}>
+            Close
+          </Button>
+        </div>
+      }
+    >
+      <div className="space-y-6">
+        {/* Executive Financial & Delivery KPI Strip */}
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <div className="rounded-xl border border-gray-200 bg-gray-50/70 p-3.5 dark:border-white/10 dark:bg-white/5">
+            <span className="text-[10px] font-bold tracking-wider text-gray-400 uppercase">Contract Budget</span>
+            <p className="font-mono-brand mt-1 text-lg font-bold text-gray-900 dark:text-white">
+              {formatCurrency(project.budget)}
+            </p>
+            <p className="text-[11px] text-gray-500">{formatCurrency(remainingBudget)} remaining</p>
+          </div>
+          <div className="rounded-xl border border-gray-200 bg-gray-50/70 p-3.5 dark:border-white/10 dark:bg-white/5">
+            <span className="text-[10px] font-bold tracking-wider text-gray-400 uppercase">Budget Burn</span>
+            <p className="font-mono-brand mt-1 text-lg font-bold text-brand-600 dark:text-brand-400">
+              {formatCurrency(project.spent)} ({burnPct}%)
+            </p>
+            <p className="text-[11px] text-gray-500">Est. margin: {Math.min(48, estMarginPct)}%</p>
+          </div>
+          <div className="rounded-xl border border-gray-200 bg-gray-50/70 p-3.5 dark:border-white/10 dark:bg-white/5">
+            <span className="text-[10px] font-bold tracking-wider text-gray-400 uppercase">Engineering Effort</span>
+            <p className="font-mono-brand mt-1 text-lg font-bold text-gray-900 dark:text-white">
+              {completedHours}h / {totalHours}h
+            </p>
+            <p className="text-[11px] text-gray-500">{tasks.length} tracked deliverables</p>
+          </div>
+          <div className="rounded-xl border border-gray-200 bg-gray-50/70 p-3.5 dark:border-white/10 dark:bg-white/5">
+            <span className="text-[10px] font-bold tracking-wider text-gray-400 uppercase">Delivery Health</span>
+            <p className="mt-1 text-base font-bold text-emerald-600 dark:text-emerald-400">
+              {burnPct > 90 && project.progress < 80 ? "At Risk" : "On Track"}
+            </p>
+            <p className="text-[11px] text-gray-500">
+              {project.due_date ? `Target ${formatDate(project.due_date)}` : "Continuous"}
+            </p>
+          </div>
+        </div>
+
+        {/* Team Allocation & Resource Load */}
+        <div className="rounded-xl border border-gray-200 p-4 dark:border-white/10">
+          <h4 className="mb-3 text-xs font-bold tracking-wider text-gray-500 uppercase dark:text-gray-400">
+            Team Resource Allocation &amp; Workload
+          </h4>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            {Array.from(byAssignee.entries()).map(([name, info]) => {
+              const pct = info.total > 0 ? Math.round((info.done / info.total) * 100) : 0;
+              return (
+                <div
+                  key={name}
+                  className="flex flex-col justify-between rounded-lg border border-gray-100 bg-gray-50/70 p-3 dark:border-white/10 dark:bg-white/5"
+                >
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-semibold text-gray-900 dark:text-white">{name}</span>
+                    <span className="font-mono-brand text-gray-500 dark:text-gray-400">
+                      {info.done}/{info.total} tasks · {info.hours}h
+                    </span>
+                  </div>
+                  <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-white/10">
+                    <div className="h-full rounded-full bg-brand-500" style={{ width: `${pct}%` }} />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Interactive Milestones & Deliverables List */}
+        <div className="rounded-xl border border-gray-200 p-4 dark:border-white/10">
+          <h4 className="mb-3 text-xs font-bold tracking-wider text-gray-500 uppercase dark:text-gray-400">
+            Milestones &amp; Sprint Deliverables ({tasks.length})
+          </h4>
+          <div className="space-y-2">
+            {tasks.length === 0 ? (
+              <p className="py-4 text-center text-xs text-gray-400">No tasks added to this project yet.</p>
+            ) : (
+              tasks.map((t) => (
+                <div
+                  key={t.id}
+                  className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-gray-100 bg-white px-3.5 py-2.5 text-xs dark:border-white/10 dark:bg-navy-950/60"
+                >
+                  <div className="min-w-0 flex-1">
+                    <p
+                      className={cn(
+                        "font-semibold text-gray-900 dark:text-white",
+                        t.status === "done" && "line-through opacity-60"
+                      )}
+                    >
+                      {t.title}
+                    </p>
+                    <p className="mt-0.5 text-[11px] text-gray-400">
+                      Owner: {t.assignee_name || "Unassigned"} · {t.estimated_hours}h ·{" "}
+                      {t.due_date ? `Due ${formatDate(t.due_date)}` : "No deadline"}
+                    </p>
+                  </div>
+                  {canWrite ? (
+                    <StatusMenu
+                      value={t.status}
+                      options={TASK_STATUS_ORDER}
+                      renderBadge={(s) => <TaskStatusBadge status={s} />}
+                      onChange={(s) => onTaskStatusChange(t, s)}
+                    />
+                  ) : (
+                    <TaskStatusBadge status={t.status} />
+                  )}
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      </div>
+    </Dialog>
   );
 }
 

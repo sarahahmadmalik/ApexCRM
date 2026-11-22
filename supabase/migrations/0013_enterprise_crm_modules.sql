@@ -416,6 +416,7 @@ declare
   workspace_uuid uuid := '00000000-0000-0000-0000-00000000d0a0';
   admin_uid      uuid;
   team_uid       uuid;
+  emp_uid        uuid;
 begin
   select id into admin_uid from auth.users where lower(email) = 'demo@apexcrm.io';
   if admin_uid is null then
@@ -492,5 +493,43 @@ begin
       ('dashboard'), ('firms'), ('cities'), ('employees'), ('contracts'),
       ('offers'), ('invoices'), ('hiring'), ('projects'), ('time_leave'), ('expenses')
   ) as p (page)
+  on conflict (user_id, page) do update set access = 'write';
+
+  select id into emp_uid from auth.users where lower(email) = 'employee@apexcrm.io';
+  if emp_uid is null then
+    emp_uid := '99999999-9999-4999-8999-999999999903';
+    insert into auth.users (
+      instance_id, id, aud, role, email, encrypted_password, email_confirmed_at,
+      raw_app_meta_data, raw_user_meta_data, created_at, updated_at,
+      confirmation_token, recovery_token, email_change_token_new, email_change
+    ) values (
+      '00000000-0000-0000-0000-000000000000', emp_uid, 'authenticated', 'authenticated',
+      'employee@apexcrm.io', extensions.crypt('ApexStaff2026!', extensions.gen_salt('bf')), now(),
+      '{"provider":"email","providers":["email"]}'::jsonb,
+      jsonb_build_object('full_name', 'Lukas Weber'),
+      now(), now(), '', '', '', ''
+    );
+    insert into auth.identities (
+      id, user_id, provider_id, provider, identity_data, last_sign_in_at, created_at, updated_at
+    ) values (
+      gen_random_uuid(), emp_uid, emp_uid::text, 'email',
+      jsonb_build_object('sub', emp_uid::text, 'email', 'employee@apexcrm.io', 'email_verified', true),
+      now(), now(), now()
+    );
+  end if;
+
+  insert into app_users (id, full_name, role, workspace_id, account_role, is_active)
+  values (emp_uid, 'Lukas Weber', 'Senior Full-Stack Engineer', workspace_uuid, 'user', true)
+  on conflict (id) do update
+    set full_name    = excluded.full_name,
+        role         = excluded.role,
+        workspace_id = excluded.workspace_id,
+        account_role = 'user',
+        is_active    = true;
+
+  delete from user_permissions where user_id = emp_uid;
+  insert into user_permissions (user_id, page, access)
+  select emp_uid, p.page, 'write'
+  from (values ('time_leave'), ('projects'), ('expenses')) as p (page)
   on conflict (user_id, page) do update set access = 'write';
 end $$;

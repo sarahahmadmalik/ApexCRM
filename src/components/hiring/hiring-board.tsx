@@ -1,17 +1,25 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
+  BadgeCheck,
   Briefcase,
   Calendar,
+  CheckCircle2,
   ExternalLink,
+  FileCheck2,
+  FileText,
+  Loader2,
   Mail,
   MapPin,
   Phone,
   Plus,
+  Sparkles,
   Star,
   Trash2,
+  Upload,
+  UserCheck,
   UserPlus,
   Users,
 } from "lucide-react";
@@ -27,12 +35,20 @@ import { TableEmptyState, TableHead, TableShell } from "@/components/ui/table-sh
 import { useConfirm } from "@/components/ui/confirm-dialog";
 import { useCanWrite } from "@/components/auth/permissions-provider";
 import { avatarTint, cn, EMPLOYMENT_TYPE_LABELS, formatDate } from "@/lib/utils";
+import {
+  extractTextFromResumeFile,
+  parseCandidateResumeMeta,
+  parseResumeContent,
+  SAMPLE_RESUMES,
+  type ExtractedResumeData,
+} from "@/lib/resume-parser";
 import type { CandidateStage, Database, EmploymentType, JobOpeningStatus } from "@/lib/types/database";
 import {
   createCandidate,
   createJobOpening,
   deleteCandidate,
   deleteJobOpening,
+  promoteCandidateToEmployee,
   updateCandidateStage,
   updateJobOpeningStatus,
 } from "@/app/(app)/hiring/actions";
@@ -98,6 +114,7 @@ export function HiringBoard({
   const [stageFilter, setStageFilter] = useState<string>("ALL");
   const [showAddJob, setShowAddJob] = useState(false);
   const [showAddCandidate, setShowAddCandidate] = useState(false);
+  const [selectedCandidate, setSelectedCandidate] = useState<JobCandidate | null>(null);
 
   const jobById = useMemo(() => new Map(openings.map((j) => [j.id, j])), [openings]);
 
@@ -110,6 +127,7 @@ export function HiringBoard({
         q &&
         !c.full_name.toLowerCase().includes(q) &&
         !c.email.toLowerCase().includes(q) &&
+        !(c.notes?.toLowerCase().includes(q) ?? false) &&
         !(jobById.get(c.job_id)?.title.toLowerCase().includes(q) ?? false)
       ) {
         return false;
@@ -121,6 +139,9 @@ export function HiringBoard({
   async function handleStageChange(candidate: JobCandidate, stage: CandidateStage) {
     const prev = candidates;
     setCandidates((cur) => cur.map((c) => (c.id === candidate.id ? { ...c, stage } : c)));
+    if (selectedCandidate?.id === candidate.id) {
+      setSelectedCandidate((cur) => (cur ? { ...cur, stage } : null));
+    }
     try {
       if (!isDemoFallback) await updateCandidateStage(candidate.id, stage);
       toast.success(`${candidate.full_name} moved to ${STAGE_LABELS[stage]}`);
@@ -133,12 +154,38 @@ export function HiringBoard({
   async function handleDeleteCandidate(candidate: JobCandidate) {
     const prev = candidates;
     setCandidates((cur) => cur.filter((c) => c.id !== candidate.id));
+    if (selectedCandidate?.id === candidate.id) setSelectedCandidate(null);
     try {
       if (!isDemoFallback) await deleteCandidate(candidate.id);
       toast.success("Candidate removed");
     } catch (err) {
       setCandidates(prev);
       toast.error(err instanceof Error ? err.message : "Couldn't remove candidate");
+    }
+  }
+
+  async function handlePromoteToEmployee(candidate: JobCandidate) {
+    const job = jobById.get(candidate.job_id);
+    const prev = candidates;
+    setCandidates((cur) => cur.map((c) => (c.id === candidate.id ? { ...c, stage: "hired" } : c)));
+    if (selectedCandidate?.id === candidate.id) {
+      setSelectedCandidate((cur) => (cur ? { ...cur, stage: "hired" } : null));
+    }
+    try {
+      if (!isDemoFallback) {
+        await promoteCandidateToEmployee({
+          candidate_id: candidate.id,
+          full_name: candidate.full_name,
+          email: candidate.email,
+          phone: candidate.phone,
+          position: job?.title ?? "Software Engineer",
+          employment_type: job?.employment_type ?? "full_time",
+        });
+      }
+      toast.success(`${candidate.full_name} promoted to Employees roster!`);
+    } catch (err) {
+      setCandidates(prev);
+      toast.error(err instanceof Error ? err.message : "Couldn't onboard candidate");
     }
   }
 
@@ -201,8 +248,8 @@ export function HiringBoard({
               New Job Opening
             </Button>
             <Button variant="outline-fill" onClick={() => setShowAddCandidate(true)}>
-              <UserPlus className="h-4 w-4" />
-              Add Candidate
+              <Upload className="h-4 w-4" />
+              Add Candidate / Parse Resume
             </Button>
           </div>
         )}
@@ -216,7 +263,11 @@ export function HiringBoard({
             setJobFilter("ALL");
             setStageFilter("ALL");
           }}
-          search={{ value: search, onChange: setSearch, placeholder: "Search candidates by name, email or role..." }}
+          search={{
+            value: search,
+            onChange: setSearch,
+            placeholder: "Search candidates by name, email, resume skills or role...",
+          }}
         >
           <Combobox
             options={[
@@ -264,14 +315,19 @@ export function HiringBoard({
                   ) : (
                     stageCandidates.map((c, idx) => {
                       const job = jobById.get(c.job_id);
+                      const resumeMeta = parseCandidateResumeMeta(c.notes);
                       return (
                         <Card
                           key={c.id}
-                          className="flex flex-col justify-between gap-3 p-4 transition-shadow hover:shadow-md"
+                          className="flex flex-col justify-between gap-3 p-4 transition-all hover:-translate-y-0.5 hover:shadow-md"
                         >
                           <div>
                             <div className="flex items-start justify-between gap-2">
-                              <div className="flex items-center gap-2.5 min-w-0">
+                              <button
+                                type="button"
+                                onClick={() => setSelectedCandidate(c)}
+                                className="flex min-w-0 cursor-pointer items-center gap-2.5 text-left"
+                              >
                                 <div
                                   className={cn(
                                     "flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold ring-1 ring-inset",
@@ -286,18 +342,51 @@ export function HiringBoard({
                                     .toUpperCase()}
                                 </div>
                                 <div className="min-w-0">
-                                  <p className="truncate text-sm font-semibold text-gray-900 dark:text-gray-100">
+                                  <p className="truncate text-sm font-semibold text-gray-900 hover:text-brand-600 dark:text-gray-100 dark:hover:text-brand-400">
                                     {c.full_name}
                                   </p>
                                   <p className="truncate text-xs text-brand-600 dark:text-brand-400">
                                     {job?.title ?? "General Application"}
                                   </p>
                                 </div>
-                              </div>
+                              </button>
                             </div>
 
-                            {c.notes && (
-                              <p className="mt-2.5 line-clamp-2 text-xs text-gray-500 dark:text-gray-400">{c.notes}</p>
+                            {/* Linked Resume Pill */}
+                            {resumeMeta.resumeFileName && (
+                              <button
+                                type="button"
+                                onClick={() => setSelectedCandidate(c)}
+                                className="mt-2.5 flex w-full cursor-pointer items-center gap-1.5 rounded-lg border border-brand-200/70 bg-brand-50/60 px-2.5 py-1.5 text-left text-[11px] font-medium text-brand-700 transition-colors hover:bg-brand-100/70 dark:border-brand-500/25 dark:bg-brand-500/10 dark:text-brand-300"
+                              >
+                                <FileCheck2 className="h-3.5 w-3.5 shrink-0 text-brand-500" />
+                                <span className="truncate">{resumeMeta.resumeFileName}</span>
+                              </button>
+                            )}
+
+                            {/* Extracted Skill Tags */}
+                            {resumeMeta.skills.length > 0 && (
+                              <div className="mt-2 flex flex-wrap gap-1">
+                                {resumeMeta.skills.slice(0, 3).map((skill) => (
+                                  <span
+                                    key={skill}
+                                    className="rounded-md bg-gray-100 px-1.5 py-0.5 text-[10px] font-medium text-gray-600 dark:bg-white/10 dark:text-gray-300"
+                                  >
+                                    {skill}
+                                  </span>
+                                ))}
+                                {resumeMeta.skills.length > 3 && (
+                                  <span className="rounded-md bg-gray-100 px-1.5 py-0.5 text-[10px] font-medium text-gray-500 dark:bg-white/5 dark:text-gray-400">
+                                    +{resumeMeta.skills.length - 3}
+                                  </span>
+                                )}
+                              </div>
+                            )}
+
+                            {resumeMeta.cleanNotes && (
+                              <p className="mt-2 line-clamp-2 text-xs text-gray-500 dark:text-gray-400">
+                                {resumeMeta.cleanNotes}
+                              </p>
                             )}
 
                             <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-gray-400 dark:text-gray-500">
@@ -317,6 +406,14 @@ export function HiringBoard({
 
                           <div className="flex items-center justify-between border-t border-gray-100 pt-2.5 dark:border-white/10">
                             <div className="flex items-center gap-1">
+                              <button
+                                type="button"
+                                onClick={() => setSelectedCandidate(c)}
+                                title="Inspect resume & scorecard"
+                                className="cursor-pointer rounded-md p-1 text-gray-400 hover:bg-brand-50 hover:text-brand-600 dark:hover:bg-brand-500/10 dark:hover:text-brand-300"
+                              >
+                                <FileText className="h-3.5 w-3.5" />
+                              </button>
                               <a
                                 href={`mailto:${c.email}`}
                                 title={c.email}
@@ -324,15 +421,6 @@ export function HiringBoard({
                               >
                                 <Mail className="h-3.5 w-3.5" />
                               </a>
-                              {c.phone && (
-                                <a
-                                  href={`tel:${c.phone}`}
-                                  title={c.phone}
-                                  className="rounded-md p-1 text-gray-400 hover:bg-brand-50 hover:text-brand-600 dark:hover:bg-brand-500/10 dark:hover:text-brand-300"
-                                >
-                                  <Phone className="h-3.5 w-3.5" />
-                                </a>
-                              )}
                               {c.portfolio_url && (
                                 <a
                                   href={c.portfolio_url}
@@ -369,14 +457,14 @@ export function HiringBoard({
       {/* VIEW 2: CANDIDATE DIRECTORY TABLE */}
       {tab === "table" && (
         <TableShell>
-          <table className="w-full min-w-[880px] table-fixed text-sm">
+          <table className="w-full min-w-[940px] table-fixed text-sm">
             <TableHead
               columns={[
-                { label: "Candidate", width: "w-[25%]" },
-                { label: "Role & Department", width: "w-[25%]" },
-                { label: "Interview", width: "w-[14%]" },
-                { label: "Evaluation", width: "w-[12%]" },
-                { label: "Stage", width: "w-[14%]" },
+                { label: "Candidate", width: "w-[22%]" },
+                { label: "Role & Department", width: "w-[22%]" },
+                { label: "Linked Resume & Skills", width: "w-[22%]" },
+                { label: "Interview", width: "w-[11%]" },
+                { label: "Stage", width: "w-[13%]" },
                 { label: "Actions", align: "right", width: "w-[10%]" },
               ]}
             />
@@ -386,15 +474,20 @@ export function HiringBoard({
                   colSpan={6}
                   icon={Users}
                   title="No candidates found"
-                  description="Adjust your filters or add a new candidate to the pipeline."
+                  description="Adjust your filters or upload a candidate resume to populate the pipeline."
                 />
               ) : (
                 filteredCandidates.map((c, idx) => {
                   const job = jobById.get(c.job_id);
+                  const resumeMeta = parseCandidateResumeMeta(c.notes);
                   return (
                     <tr key={c.id} className="h-14 transition-colors hover:bg-gray-50/60 dark:hover:bg-white/5">
                       <td className="px-4 py-3">
-                        <div className="flex items-center gap-3">
+                        <button
+                          type="button"
+                          onClick={() => setSelectedCandidate(c)}
+                          className="flex cursor-pointer items-center gap-3 text-left"
+                        >
                           <div
                             className={cn(
                               "flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold ring-1 ring-inset",
@@ -404,10 +497,12 @@ export function HiringBoard({
                             {c.full_name.slice(0, 2).toUpperCase()}
                           </div>
                           <div className="min-w-0">
-                            <p className="truncate font-medium text-gray-900 dark:text-gray-100">{c.full_name}</p>
+                            <p className="truncate font-medium text-gray-900 hover:text-brand-600 dark:text-gray-100">
+                              {c.full_name}
+                            </p>
                             <p className="truncate text-xs text-gray-400 dark:text-gray-500">{c.email}</p>
                           </div>
-                        </div>
+                        </button>
                       </td>
                       <td className="px-4 py-3">
                         <p className="truncate font-medium text-gray-800 dark:text-gray-200">{job?.title ?? "—"}</p>
@@ -415,15 +510,22 @@ export function HiringBoard({
                           {job ? `${job.department} · ${job.location}` : "—"}
                         </p>
                       </td>
+                      <td className="px-4 py-3">
+                        {resumeMeta.resumeFileName ? (
+                          <button
+                            type="button"
+                            onClick={() => setSelectedCandidate(c)}
+                            className="inline-flex max-w-full cursor-pointer items-center gap-1.5 rounded-md bg-brand-50 px-2 py-1 text-xs font-medium text-brand-700 hover:bg-brand-100 dark:bg-brand-500/10 dark:text-brand-300"
+                          >
+                            <FileCheck2 className="h-3.5 w-3.5 shrink-0" />
+                            <span className="truncate">{resumeMeta.resumeFileName}</span>
+                          </button>
+                        ) : (
+                          <span className="text-xs text-gray-400">No file linked</span>
+                        )}
+                      </td>
                       <td className="px-4 py-3 text-gray-600 dark:text-gray-400">
                         {c.interview_date ? formatDate(c.interview_date) : "Not scheduled"}
-                      </td>
-                      <td className="px-4 py-3">
-                        <span className="inline-flex items-center gap-0.5 text-amber-500">
-                          {Array.from({ length: c.rating }).map((_, i) => (
-                            <Star key={i} className="h-3.5 w-3.5 fill-current" />
-                          ))}
-                        </span>
                       </td>
                       <td className="px-4 py-3">
                         {canWrite ? (
@@ -439,17 +541,14 @@ export function HiringBoard({
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex items-center justify-end gap-1">
-                          {c.portfolio_url && (
-                            <a
-                              href={c.portfolio_url}
-                              target="_blank"
-                              rel="noreferrer"
-                              title="Open portfolio"
-                              className="rounded-md p-1.5 text-gray-400 hover:bg-brand-50 hover:text-brand-700 dark:hover:bg-brand-500/10 dark:hover:text-brand-300"
-                            >
-                              <ExternalLink className="h-4 w-4" />
-                            </a>
-                          )}
+                          <button
+                            type="button"
+                            title="View resume & scorecard"
+                            onClick={() => setSelectedCandidate(c)}
+                            className="cursor-pointer rounded-md p-1.5 text-gray-400 hover:bg-brand-50 hover:text-brand-700 dark:hover:bg-brand-500/10 dark:hover:text-brand-300"
+                          >
+                            <FileText className="h-4 w-4" />
+                          </button>
                           {canWrite && (
                             <button
                               type="button"
@@ -585,7 +684,7 @@ export function HiringBoard({
         onCreated={(job) => setOpenings((cur) => [job, ...cur])}
       />
 
-      {/* Add Candidate Modal */}
+      {/* Add Candidate + Resume Parser Modal */}
       <AddCandidateDialog
         open={showAddCandidate}
         onClose={() => setShowAddCandidate(false)}
@@ -593,7 +692,183 @@ export function HiringBoard({
         isDemoFallback={isDemoFallback}
         onCreated={(cand) => setCandidates((cur) => [cand, ...cur])}
       />
+
+      {/* Candidate Linked Resume & Scorecard Drawer */}
+      <CandidateDetailsDrawer
+        candidate={selectedCandidate}
+        job={selectedCandidate ? jobById.get(selectedCandidate.job_id) : undefined}
+        canWrite={canWrite}
+        onClose={() => setSelectedCandidate(null)}
+        onStageChange={(stage) => selectedCandidate && handleStageChange(selectedCandidate, stage)}
+        onPromote={() => selectedCandidate && handlePromoteToEmployee(selectedCandidate)}
+      />
     </div>
+  );
+}
+
+function CandidateDetailsDrawer({
+  candidate,
+  job,
+  canWrite,
+  onClose,
+  onStageChange,
+  onPromote,
+}: {
+  candidate: JobCandidate | null;
+  job?: JobOpening;
+  canWrite: boolean;
+  onClose: () => void;
+  onStageChange: (stage: CandidateStage) => void;
+  onPromote: () => void;
+}) {
+  if (!candidate) return null;
+  const resumeMeta = parseCandidateResumeMeta(candidate.notes);
+
+  return (
+    <Dialog
+      open={!!candidate}
+      onClose={onClose}
+      title={candidate.full_name}
+      description={`${job?.title ?? "Candidate"} · ${job?.department ?? "Talent Pipeline"}`}
+      position="right"
+      size="lg"
+      footer={
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          {canWrite && candidate.stage !== "hired" ? (
+            <Button variant="outline-brand" onClick={onPromote}>
+              <UserCheck className="h-4 w-4" />
+              Hire &amp; Promote to Employees Roster
+            </Button>
+          ) : (
+            <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+              <BadgeCheck className="h-4 w-4" />
+              Onboarded to Team Roster
+            </span>
+          )}
+          <Button variant="outline" onClick={onClose}>
+            Close
+          </Button>
+        </div>
+      }
+    >
+      <div className="space-y-6">
+        {/* Stage & Contact Bar */}
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-gray-200 bg-gray-50/70 p-4 dark:border-white/10 dark:bg-white/5">
+          <div className="space-y-1">
+            <p className="text-xs font-semibold tracking-wider text-gray-400 uppercase">Current ATS Stage</p>
+            {canWrite ? (
+              <StatusMenu
+                value={candidate.stage}
+                options={STAGE_ORDER}
+                renderBadge={(s) => <CandidateStageBadge stage={s} />}
+                onChange={onStageChange}
+              />
+            ) : (
+              <CandidateStageBadge stage={candidate.stage} />
+            )}
+          </div>
+          <div className="flex flex-wrap items-center gap-3 text-xs text-gray-600 dark:text-gray-300">
+            <a href={`mailto:${candidate.email}`} className="inline-flex items-center gap-1.5 hover:text-brand-600">
+              <Mail className="h-3.5 w-3.5 text-brand-500" />
+              {candidate.email}
+            </a>
+            {candidate.phone && (
+              <a href={`tel:${candidate.phone}`} className="inline-flex items-center gap-1.5 hover:text-brand-600">
+                <Phone className="h-3.5 w-3.5 text-brand-500" />
+                {candidate.phone}
+              </a>
+            )}
+            {candidate.portfolio_url && (
+              <a
+                href={candidate.portfolio_url}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-1 font-semibold text-brand-600 hover:underline dark:text-brand-400"
+              >
+                <ExternalLink className="h-3.5 w-3.5" />
+                Portfolio / Profile
+              </a>
+            )}
+          </div>
+        </div>
+
+        {/* Linked Resume Document Card */}
+        <div className="rounded-xl border border-brand-200 bg-brand-50/40 p-4 dark:border-brand-500/25 dark:bg-brand-500/10">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-brand-500 text-white">
+                <FileCheck2 className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="text-xs font-bold tracking-wider text-brand-700 uppercase dark:text-brand-300">
+                  Linked Candidate Resume
+                </p>
+                <p className="font-mono-brand text-sm font-semibold text-gray-900 dark:text-white">
+                  {resumeMeta.resumeFileName ?? `${candidate.full_name.replace(/\s+/g, "_")}_Resume.pdf`}
+                </p>
+              </div>
+            </div>
+            <Badge className="bg-emerald-100 text-emerald-700 ring-emerald-600/20 dark:bg-emerald-500/20 dark:text-emerald-300">
+              Verified &amp; Parsed
+            </Badge>
+          </div>
+
+          {resumeMeta.skills.length > 0 && (
+            <div className="mt-4">
+              <p className="mb-2 text-[11px] font-semibold tracking-wider text-gray-500 uppercase dark:text-gray-400">
+                Extracted Skills &amp; Competencies
+              </p>
+              <div className="flex flex-wrap gap-1.5">
+                {resumeMeta.skills.map((skill) => (
+                  <span
+                    key={skill}
+                    className="rounded-lg bg-white px-2.5 py-1 text-xs font-semibold text-brand-700 shadow-2xs ring-1 ring-brand-200 dark:bg-navy-900 dark:text-brand-300 dark:ring-brand-500/30"
+                  >
+                    {skill}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className="mt-4 rounded-lg border border-gray-200/80 bg-white p-3.5 text-xs leading-relaxed text-gray-700 dark:border-white/10 dark:bg-navy-900 dark:text-gray-300">
+            <p className="mb-1 font-semibold text-gray-900 dark:text-white">Resume Extraction Summary</p>
+            <p>{resumeMeta.cleanNotes || candidate.notes || "Candidate profile parsed from uploaded CV."}</p>
+          </div>
+        </div>
+
+        {/* Evaluation Scorecard */}
+        <div className="rounded-xl border border-gray-200 p-4 dark:border-white/10">
+          <div className="mb-3 flex items-center justify-between">
+            <h4 className="text-sm font-semibold text-gray-900 dark:text-white">Interview &amp; Resume Scorecard</h4>
+            <span className="inline-flex items-center gap-1 text-amber-500">
+              {Array.from({ length: candidate.rating }).map((_, i) => (
+                <Star key={i} className="h-4 w-4 fill-current" />
+              ))}
+              <span className="ml-1 text-xs font-bold text-gray-700 dark:text-gray-300">{candidate.rating}.0 / 5.0</span>
+            </span>
+          </div>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            {[
+              { label: "Technical / Role Competency", pct: candidate.rating * 20 },
+              { label: "Experience & Domain Depth", pct: Math.min(100, candidate.rating * 18 + 8) },
+              { label: "Communication & Stakeholder Fit", pct: 92 },
+              { label: "Culture & Team Alignment", pct: 95 },
+            ].map((item) => (
+              <div key={item.label} className="rounded-lg bg-gray-50 p-3 dark:bg-white/5">
+                <div className="mb-1.5 flex items-center justify-between text-xs">
+                  <span className="font-medium text-gray-600 dark:text-gray-300">{item.label}</span>
+                  <span className="font-mono-brand font-bold text-gray-900 dark:text-white">{item.pct}%</span>
+                </div>
+                <div className="h-1.5 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-white/10">
+                  <div className="h-full rounded-full bg-brand-500" style={{ width: `${item.pct}%` }} />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </Dialog>
   );
 }
 
@@ -727,54 +1002,135 @@ function AddCandidateDialog({
   onCreated: (candidate: JobCandidate) => void;
 }) {
   const [saving, setSaving] = useState(false);
+  const [parsing, setParsing] = useState(false);
   const [jobId, setJobId] = useState<string>(openings[0]?.id ?? "");
-  const [stage, setStage] = useState<CandidateStage>("applied");
+  const [stage, setStage] = useState<CandidateStage>("screening");
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [portfolioUrl, setPortfolioUrl] = useState("");
+  const [interviewDate, setInterviewDate] = useState("");
+  const [rating, setRating] = useState<number>(5);
+  const [notes, setNotes] = useState("");
+  const [extractedMeta, setExtractedMeta] = useState<ExtractedResumeData | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  async function handleSubmit(formData: FormData) {
-    const full_name = String(formData.get("full_name") ?? "").trim();
-    const email = String(formData.get("email") ?? "").trim();
-    const phone = String(formData.get("phone") ?? "").trim();
-    const interview_date = String(formData.get("interview_date") ?? "").trim();
-    const portfolio_url = String(formData.get("portfolio_url") ?? "").trim();
-    const notes = String(formData.get("notes") ?? "").trim();
-    const rating = Number(formData.get("rating") ?? 4);
-    const targetJobId = jobId || openings[0]?.id;
+  function resetForm() {
+    setFullName("");
+    setEmail("");
+    setPhone("");
+    setPortfolioUrl("");
+    setInterviewDate("");
+    setRating(4);
+    setNotes("");
+    setExtractedMeta(null);
+    setStage("applied");
+  }
 
-    if (!full_name || !email || !targetJobId) {
-      toast.error("Please fill in candidate name, email, and role.");
+  function applyExtractedData(parsed: ExtractedResumeData) {
+    setExtractedMeta(parsed);
+    setFullName(parsed.full_name);
+    setEmail(parsed.email);
+    setPhone(parsed.phone);
+    setPortfolioUrl(parsed.portfolio_url);
+    setRating(parsed.suggested_rating);
+    setNotes(parsed.summary);
+    setStage("screening");
+
+    // Auto-match best job opening by detected role keywords
+    const roleLower = parsed.detected_role.toLowerCase();
+    const matchedJob = openings.find(
+      (j) =>
+        (roleLower.includes("sales") && /sales|account/i.test(j.title)) ||
+        (roleLower.includes("design") && /design/i.test(j.title)) ||
+        (roleLower.includes("devops") && /devops|security/i.test(j.title)) ||
+        (roleLower.includes("engineer") && /engineer/i.test(j.title))
+    );
+    if (matchedJob) setJobId(matchedJob.id);
+  }
+
+  async function handleResumeFile(file: File) {
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error("Resume file must be under 10 MB.");
       return;
     }
+    setParsing(true);
+    try {
+      const rawText = await extractTextFromResumeFile(file);
+      const parsed = parseResumeContent(rawText, file.name);
+      applyExtractedData(parsed);
+      toast.success(`Extracted candidate profile & ${parsed.skills.length} skills from ${file.name}`);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Couldn't extract resume data");
+    } finally {
+      setParsing(false);
+    }
+  }
+
+  function handleSampleResume(sample: (typeof SAMPLE_RESUMES)[number]) {
+    setParsing(true);
+    setTimeout(() => {
+      try {
+        const parsed = parseResumeContent(sample.content, sample.fileName);
+        applyExtractedData(parsed);
+        toast.success(`Parsed sample resume: ${sample.fileName}`);
+      } catch {
+        toast.error("Couldn't parse sample resume");
+      } finally {
+        setParsing(false);
+      }
+    }, 220);
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    const targetJobId = jobId || openings[0]?.id;
+
+    if (!fullName.trim() || !email.trim() || !targetJobId) {
+      toast.error("Please fill in candidate name, email, and job opening.");
+      return;
+    }
+
+    const finalNotes =
+      extractedMeta && !notes.includes("[Resume:")
+        ? `[Resume: ${extractedMeta.resume_file_name}] · ${notes.trim()}`
+        : notes.trim();
 
     setSaving(true);
     try {
       if (!isDemoFallback) {
         await createCandidate({
           job_id: targetJobId,
-          full_name,
-          email,
-          phone,
+          full_name: fullName.trim(),
+          email: email.trim(),
+          phone: phone.trim(),
           stage,
           rating,
-          interview_date: interview_date || null,
-          portfolio_url,
-          notes,
+          interview_date: interviewDate || null,
+          portfolio_url: portfolioUrl.trim(),
+          notes: finalNotes,
         });
       }
       onCreated({
         id: crypto.randomUUID(),
         job_id: targetJobId,
-        full_name,
-        email,
-        phone: phone || null,
+        full_name: fullName.trim(),
+        email: email.trim(),
+        phone: phone.trim() || null,
         stage,
         rating,
-        interview_date: interview_date || null,
-        portfolio_url: portfolio_url || null,
-        notes: notes || null,
+        interview_date: interviewDate || null,
+        portfolio_url: portfolioUrl.trim() || null,
+        notes: finalNotes || null,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       });
-      toast.success("Candidate added to pipeline");
+      toast.success(
+        extractedMeta
+          ? `${fullName.trim()} added with linked resume (${extractedMeta.resume_file_name})`
+          : "Candidate added to pipeline"
+      );
+      resetForm();
       onClose();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Couldn't add candidate");
@@ -786,64 +1142,201 @@ function AddCandidateDialog({
   return (
     <Dialog
       open={open}
-      onClose={onClose}
-      title="Add candidate to ATS"
-      description="Track a new applicant across screening, interviews, and offer stages."
+      onClose={() => {
+        resetForm();
+        onClose();
+      }}
+      title="Add Candidate & Resume Auto-Extract"
+      description="Upload a resume (.pdf, .docx, .txt) to automatically extract candidate contact info, skills, and role match — or try a 1-click sample resume."
       position="right"
-      size="md"
+      size="lg"
       footer={
-        <div className="flex justify-end gap-3">
-          <Button type="button" variant="ghost" onClick={onClose}>
-            Cancel
-          </Button>
-          <Button type="submit" form="add-candidate-form" variant="outline-brand" loading={saving}>
-            <UserPlus className="h-4 w-4" />
-            Save candidate
-          </Button>
+        <div className="flex items-center justify-between gap-3">
+          {extractedMeta ? (
+            <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+              <CheckCircle2 className="h-4 w-4" />
+              Resume linked: {extractedMeta.resume_file_name}
+            </span>
+          ) : (
+            <span className="text-xs text-gray-400">Manual entry or resume upload</span>
+          )}
+          <div className="flex gap-3">
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => {
+                resetForm();
+                onClose();
+              }}
+            >
+              Cancel
+            </Button>
+            <Button type="submit" form="add-candidate-form" variant="outline-brand" loading={saving}>
+              <UserPlus className="h-4 w-4" />
+              Save Candidate &amp; Link Resume
+            </Button>
+          </div>
         </div>
       }
     >
-      <form id="add-candidate-form" action={handleSubmit} className="space-y-4">
-        <FormRow label="Job opening" required>
+      <form id="add-candidate-form" onSubmit={handleSubmit} className="space-y-5">
+        {/* Smart Resume Dropzone */}
+        <div className="rounded-xl border-2 border-dashed border-brand-300 bg-brand-50/40 p-4 transition-colors dark:border-brand-500/30 dark:bg-brand-500/10">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".pdf,.docx,.doc,.txt,.md"
+            className="hidden"
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (f) void handleResumeFile(f);
+              e.target.value = "";
+            }}
+          />
+
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-500 text-white shadow-xs">
+                {parsing ? <Loader2 className="h-5 w-5 animate-spin" /> : <Sparkles className="h-5 w-5" />}
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                  Smart Resume Parser &amp; Skill Extractor
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  Extracts name, email, phone, portfolio URL, skills &amp; best job opening match.
+                </p>
+              </div>
+            </div>
+
+            <Button
+              type="button"
+              size="sm"
+              variant="outline-brand"
+              disabled={parsing}
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <Upload className="h-3.5 w-3.5" />
+              Upload Resume (.PDF / .DOCX)
+            </Button>
+          </div>
+
+          {/* 1-Click Sample Resumes for Website Demo Visitors */}
+          <div className="mt-3 border-t border-brand-200/60 pt-3 dark:border-white/10">
+            <p className="mb-2 text-[11px] font-semibold tracking-wider text-brand-700 uppercase dark:text-brand-300">
+              Or test instant extraction with a sample resume:
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {SAMPLE_RESUMES.map((sample) => (
+                <button
+                  key={sample.fileName}
+                  type="button"
+                  onClick={() => handleSampleResume(sample)}
+                  className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg border border-brand-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-gray-800 transition-all hover:border-brand-500 hover:text-brand-700 dark:border-white/10 dark:bg-navy-800 dark:text-gray-200 dark:hover:border-brand-400"
+                >
+                  <FileText className="h-3.5 w-3.5 text-brand-500" />
+                  {sample.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Extracted Resume Preview Banner */}
+          {extractedMeta && (
+            <div className="mt-3 rounded-lg border border-emerald-200 bg-emerald-50/80 p-3 dark:border-emerald-500/30 dark:bg-emerald-500/10">
+              <div className="flex items-center justify-between text-xs font-semibold text-emerald-800 dark:text-emerald-300">
+                <span className="inline-flex items-center gap-1.5">
+                  <FileCheck2 className="h-4 w-4" />
+                  Linked: {extractedMeta.resume_file_name} ({extractedMeta.detected_role})
+                </span>
+                <span>Auto-score: {extractedMeta.suggested_rating}/5 ★</span>
+              </div>
+              <div className="mt-2 flex flex-wrap gap-1">
+                {extractedMeta.skills.map((s) => (
+                  <span
+                    key={s}
+                    className="rounded bg-white px-2 py-0.5 text-[10px] font-semibold text-emerald-700 ring-1 ring-emerald-200 dark:bg-navy-900 dark:text-emerald-300 dark:ring-emerald-500/30"
+                  >
+                    {s}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        <FormRow label="Target job opening" required>
           <Combobox
             options={openings.map((j) => ({ value: j.id, label: `${j.title} (${j.department})` }))}
             value={jobId || openings[0]?.id || null}
             onChange={(v) => setJobId(v ?? "")}
           />
         </FormRow>
+
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <FormRow label="Full name" required>
-            <Input name="full_name" placeholder="e.g. Hannah Fischer" required />
+          <FormRow label="Candidate full name" required>
+            <Input
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              placeholder="e.g. Marcus Vogel"
+              required
+            />
           </FormRow>
-          <FormRow label="Email" required>
-            <Input name="email" type="email" placeholder="hannah@example.de" required />
+          <FormRow label="Email address" required>
+            <Input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="marcus.vogel@devmail.de"
+              required
+            />
           </FormRow>
         </div>
+
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <FormRow label="Phone">
-            <Input name="phone" placeholder="+49 170 1234567" />
+          <FormRow label="Phone number">
+            <Input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+49 172 8841920" />
           </FormRow>
           <FormRow label="Pipeline stage">
             <Combobox
               options={STAGE_ORDER.map((s) => ({ value: s, label: STAGE_LABELS[s] }))}
               value={stage}
-              onChange={(v) => setStage((v as CandidateStage) || "applied")}
+              onChange={(v) => setStage((v as CandidateStage) || "screening")}
             />
           </FormRow>
         </div>
+
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <FormRow label="Interview date">
-            <Input name="interview_date" type="date" />
+            <Input type="date" value={interviewDate} onChange={(e) => setInterviewDate(e.target.value)} />
           </FormRow>
-          <FormRow label="Rating (1 - 5)">
-            <Input name="rating" type="number" min={1} max={5} defaultValue={4} />
+          <FormRow label="Evaluation rating (1 - 5)">
+            <Input
+              type="number"
+              min={1}
+              max={5}
+              value={rating}
+              onChange={(e) => setRating(Math.min(5, Math.max(1, Number(e.target.value) || 4)))}
+            />
           </FormRow>
         </div>
-        <FormRow label="Portfolio / LinkedIn / GitHub URL">
-          <Input name="portfolio_url" type="url" placeholder="https://github.com/..." />
+
+        <FormRow label="Portfolio / GitHub / LinkedIn URL">
+          <Input
+            type="url"
+            value={portfolioUrl}
+            onChange={(e) => setPortfolioUrl(e.target.value)}
+            placeholder="https://github.com/..."
+          />
         </FormRow>
-        <FormRow label="Interviewer notes">
-          <Textarea name="notes" rows={3} placeholder="Key strengths, salary expectations, notice period..." />
+
+        <FormRow label="Extracted Resume Summary & Interviewer Notes">
+          <Textarea
+            rows={3}
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            placeholder="Extracted skills, experience summary, and interview feedback..."
+          />
         </FormRow>
       </form>
     </Dialog>

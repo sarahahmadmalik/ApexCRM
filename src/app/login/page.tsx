@@ -12,16 +12,22 @@ import { PasswordInput } from "@/components/auth/password-input";
 
 const SAMPLE_ACCOUNTS = [
   {
-    label: "Admin Showcase",
-    role: "VP of Operations (Full Access)",
+    label: "Boss / Executive",
+    role: "VP of Operations (Full CRM, HR & Approvals)",
     email: "demo@apexcrm.io",
     password: "ApexDemo2026!",
   },
   {
-    label: "Manager Showcase",
-    role: "Operations Manager",
+    label: "Project Manager",
+    role: "Delivery Lead (Projects, Hiring & CRM)",
     email: "team@apexcrm.io",
     password: "ApexTeam2026!",
+  },
+  {
+    label: "Employee Portal",
+    role: "Engineer (Work Timer, Leave & Salary Only)",
+    email: "employee@apexcrm.io",
+    password: "ApexStaff2026!",
   },
 ] as const;
 
@@ -58,7 +64,7 @@ export default function LoginPage() {
         <p className="mt-1 text-xs text-gray-600 dark:text-gray-300">
           Click a sample account below to autofill credentials for the live showcase:
         </p>
-        <div className="mt-2.5 grid grid-cols-1 gap-2 sm:grid-cols-2">
+        <div className="mt-2.5 grid grid-cols-1 gap-2">
           {SAMPLE_ACCOUNTS.map((acct) => (
             <button
               key={acct.email}

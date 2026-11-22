@@ -14,7 +14,13 @@ const DEFAULT_WORKSPACE_ID = "00000000-0000-0000-0000-00000000d0a0";
 
 const SAMPLE_LOGINS: Record<
   string,
-  { password: string; fullName: string; role: string; accountRole: "admin" | "user" }
+  {
+    password: string;
+    fullName: string;
+    role: string;
+    accountRole: "admin" | "user";
+    pages?: (typeof PAGE_KEYS)[number][];
+  }
 > = {
   "demo@apexcrm.io": {
     password: "ApexDemo2026!",
@@ -25,8 +31,15 @@ const SAMPLE_LOGINS: Record<
   "team@apexcrm.io": {
     password: "ApexTeam2026!",
     fullName: "Maya Lin",
-    role: "Operations Manager",
+    role: "Project & Delivery Lead",
     accountRole: "user",
+  },
+  "employee@apexcrm.io": {
+    password: "ApexStaff2026!",
+    fullName: "Lukas Weber",
+    role: "Senior Full-Stack Engineer",
+    accountRole: "user",
+    pages: ["time_leave", "projects", "expenses"],
   },
 };
 
@@ -80,8 +93,10 @@ async function ensureSampleLoginProvisioned(email: string, password: string) {
     );
 
     if (sample.accountRole === "user") {
+      const allowedPages = sample.pages ?? PAGE_KEYS;
+      await svc.from("user_permissions").delete().eq("user_id", userId);
       await svc.from("user_permissions").upsert(
-        PAGE_KEYS.map((page) => ({ user_id: userId, page, access: "write" as const })),
+        allowedPages.map((page) => ({ user_id: userId, page, access: "write" as const })),
         { onConflict: "user_id,page" }
       );
     }
@@ -135,5 +150,8 @@ export async function login(_prevState: { error: string; email: string }, formDa
 
   resetRateLimit(acctKey);
   (await cookies()).set(JUST_SIGNED_IN_COOKIE, "1", justSignedInCookieOptions());
+  if (email.toLowerCase() === "employee@apexcrm.io") {
+    redirect("/time-leave");
+  }
   redirect("/overview");
 }

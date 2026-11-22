@@ -77,7 +77,7 @@ export function SiteLoader({ showcase = false, caption = "Loading your workspace
       role="status"
       aria-label="Loading ApexCRM"
     >
-      <svg viewBox="0 0 185 60" className="site-loader-svg" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+      <svg viewBox="0 0 165 60" className="site-loader-svg" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
         <g transform="translate(18 6)">
           <path
             d="M24 6 L8 40 H17.5 L24 25.5 L30.5 40 H40 L24 6 Z"
@@ -98,7 +98,6 @@ export function SiteLoader({ showcase = false, caption = "Loading your workspace
           >
             apex
           </text>
-          <circle cx="138" cy="31" r="3.5" fill={CYAN} className="sl-node" style={{ animationDelay: "1.1s" }} />
         </g>
       </svg>
       <p className="site-loader-caption">{caption}</p>
