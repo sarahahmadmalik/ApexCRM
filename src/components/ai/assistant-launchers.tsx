@@ -26,6 +26,8 @@ const AssistantContext = createContext<AssistantContextValue>({
   setPlacement: () => {},
 });
 
+const PLACEMENT_STORAGE_KEY = "apex-assistant-placement";
+
 /** Shared state so the header button, the floating button, the panel and the Profile setting stay in sync. */
 export function AssistantProvider({
   enabled,
@@ -39,17 +41,30 @@ export function AssistantProvider({
   children: React.ReactNode;
 }) {
   const [open, setOpenState] = useState(false);
-  const [placement, setPlacementState] = useState<AssistantPlacement>(initialPlacement);
+  const [placement, setPlacementState] = useState<AssistantPlacement>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const saved = localStorage.getItem(PLACEMENT_STORAGE_KEY) as AssistantPlacement | null;
+        if (saved && ["header", "floating", "hidden"].includes(saved)) return saved;
+      } catch {
+        // Ignore storage errors
+      }
+    }
+    return initialPlacement;
+  });
   const setOpen = useCallback((value: boolean) => setOpenState(value), []);
 
   const setPlacement = useCallback(
     (next: AssistantPlacement) => {
-      const previous = placement;
-      if (next === previous) return;
+      if (next === placement) return;
       setPlacementState(next);
-      updateAssistantPlacement(next).catch((err: unknown) => {
-        setPlacementState(previous);
-        toast.error(err instanceof Error ? err.message : "Couldn't save your choice.");
+      try {
+        localStorage.setItem(PLACEMENT_STORAGE_KEY, next);
+      } catch {
+        // Ignore storage errors
+      }
+      updateAssistantPlacement(next).catch(() => {
+        // Placement remains persisted in localStorage even if DB column isn't migrated yet
       });
     },
     [placement]

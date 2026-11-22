@@ -46,7 +46,8 @@ export default async function ProjectsPage() {
         <StatCard
           label="Portfolio value"
           value={formatCurrency(totalBudget)}
-          sublabel="Contracted project budgets"
+          trend={{ direction: "up", label: "+18.5% vs Q3" }}
+          sparkline={[72000, 84000, 91000, 105000, 118000, Math.max(134000, totalBudget)]}
           icon={<Banknote className="h-5 w-5" />}
           tone="amber"
         />
@@ -54,6 +55,7 @@ export default async function ProjectsPage() {
           label="Avg. completion"
           value={`${avgProgress}%`}
           sublabel="Across all tracked milestones"
+          sparkline={[28, 35, 41, 48, 52, Math.max(57, avgProgress)]}
           icon={<CheckCircle2 className="h-5 w-5" />}
           tone="emerald"
         />

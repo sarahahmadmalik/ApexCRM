@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { sparklinePath } from "@/lib/data/trends";
 import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 
 export function Card({ className, children }: { className?: string; children: React.ReactNode }) {
@@ -60,11 +61,21 @@ const toneClasses: Record<StatTone, string> = {
   slate: "bg-slate-100 text-slate-600 dark:bg-slate-400/10 dark:text-slate-300",
 };
 
+const sparklineStrokeClasses: Record<StatTone, string> = {
+  brand: "text-brand-500 dark:text-brand-400",
+  emerald: "text-emerald-500 dark:text-emerald-400",
+  amber: "text-amber-500 dark:text-amber-400",
+  rose: "text-rose-500 dark:text-rose-400",
+  indigo: "text-indigo-500 dark:text-indigo-400",
+  slate: "text-brand-500 dark:text-brand-400",
+};
+
 export function StatCard({
   label,
   value,
   sublabel,
   trend,
+  sparkline,
   icon,
   tone = "brand",
 }: {
@@ -72,30 +83,62 @@ export function StatCard({
   value: string | number;
   sublabel?: string;
   trend?: StatTrend;
+  /** Optional series of numbers — renders a compact mini line graph on key financial/velocity stats. */
+  sparkline?: number[];
   icon?: React.ReactNode;
   /** Icon chip color — vary this across a row of stat cards. Defaults to brand. */
   tone?: StatTone;
 }) {
   const TrendIcon = trend ? trendIcon[trend.direction] : null;
+  const spark = sparkline && sparkline.length >= 2 ? sparklinePath(sparkline) : null;
+
   return (
-    <Card className="p-5">
-      <div className="flex items-start justify-between">
-        <p className="text-xs font-semibold tracking-wide text-gray-500 uppercase dark:text-gray-400">{label}</p>
-        {icon && (
-          <div className={cn("flex h-8 w-8 shrink-0 items-center justify-center rounded-lg", toneClasses[tone])}>
-            {icon}
-          </div>
+    <Card className="flex flex-col justify-between p-5 transition-shadow hover:shadow-md">
+      <div>
+        <div className="flex items-start justify-between">
+          <p className="text-xs font-semibold tracking-wide text-gray-500 uppercase dark:text-gray-400">{label}</p>
+          {icon && (
+            <div className={cn("flex h-8 w-8 shrink-0 items-center justify-center rounded-lg", toneClasses[tone])}>
+              {icon}
+            </div>
+          )}
+        </div>
+        <p className="font-display mt-2 text-2xl font-semibold text-gray-900 dark:text-gray-100">{value}</p>
+      </div>
+
+      <div className="mt-4 flex items-end justify-between gap-2">
+        <div className="min-w-0">
+          {trend && TrendIcon ? (
+            <p className={cn("flex items-center gap-1 text-xs font-semibold", trendClasses[trend.direction])}>
+              <TrendIcon className="h-3.5 w-3.5 shrink-0" />
+              <span className="truncate">{trend.label}</span>
+            </p>
+          ) : (
+            sublabel && <p className="truncate text-xs text-gray-400 dark:text-gray-500">{sublabel}</p>
+          )}
+          {trend && sublabel && (
+            <p className="mt-0.5 truncate text-[11px] text-gray-400 dark:text-gray-500">{sublabel}</p>
+          )}
+        </div>
+
+        {spark && (
+          <svg
+            className={cn("h-6 w-20 shrink-0 overflow-visible", sparklineStrokeClasses[tone])}
+            fill="none"
+            viewBox="0 0 80 24"
+            aria-hidden
+          >
+            <path d={spark.area} fill="currentColor" fillOpacity="0.14" />
+            <path
+              d={spark.line}
+              stroke="currentColor"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+            />
+          </svg>
         )}
       </div>
-      <p className="font-display mt-2 text-2xl font-semibold text-gray-900 dark:text-gray-100">{value}</p>
-      {trend && TrendIcon ? (
-        <p className={cn("mt-1 flex items-center gap-1 text-xs font-medium", trendClasses[trend.direction])}>
-          <TrendIcon className="h-3.5 w-3.5" />
-          {trend.label}
-        </p>
-      ) : (
-        sublabel && <p className="mt-1 text-xs text-gray-400 dark:text-gray-500">{sublabel}</p>
-      )}
     </Card>
   );
 }

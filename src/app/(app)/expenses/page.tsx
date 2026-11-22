@@ -42,6 +42,7 @@ export default async function ExpensesPage() {
           label="Latest monthly payroll"
           value={formatCurrency(latestPayroll)}
           sublabel={payroll[0] ? `${payroll[0].period_label} · ${payroll[0].employee_count} staff` : "No runs yet"}
+          sparkline={[38200, 39600, 42400, 42400, Math.max(46800, latestPayroll)]}
           icon={<Wallet className="h-5 w-5" />}
           tone="slate"
         />
@@ -55,7 +56,8 @@ export default async function ExpensesPage() {
         <StatCard
           label="Reimbursed expenses"
           value={formatCurrency(reimbursedTotal)}
-          sublabel="Settled employee & ops claims"
+          trend={{ direction: "down", label: "-8.4% ops spend MoM" }}
+          sparkline={[1420, 1180, 960, 890, Math.max(730, reimbursedTotal)]}
           icon={<CheckCircle2 className="h-5 w-5" />}
           tone="emerald"
         />

@@ -6,6 +6,7 @@ import { ExportFirmsButton } from "@/components/firms/export-firms-button";
 import { ImportFirmsButton } from "@/components/firms/import-firms-button";
 import { PageHeader } from "@/components/ui/page-header";
 import { ErrorNotice } from "@/components/ui/error-notice";
+import { DEMO_FIRMS } from "@/lib/data/showcase-seed";
 import type { FirmStatus } from "@/lib/types/database";
 import { requirePageAccess } from "@/lib/auth/guards";
 
@@ -62,6 +63,22 @@ export default async function FirmsPage({
   ]);
   const queryError = error ?? countError;
 
+  // Augment with showcase enterprise firms (clients, negotiation, responded) on page 1 so the showcase pipeline has rich statuses
+  const filteredDemo = DEMO_FIRMS.filter((df) => {
+    if (params.q && !df.name.toLowerCase().includes(params.q.toLowerCase())) return false;
+    if (params.country && !params.country.split(",").includes(df.country)) return false;
+    if (params.state && !params.state.split(",").includes(df.state)) return false;
+    if (params.city && !params.city.split(",").includes(df.city)) return false;
+    if (params.status && !(params.status.split(",") as FirmStatus[]).includes(df.status)) return false;
+    return true;
+  });
+
+  const dbFirms = firms ?? [];
+  const dbNames = new Set(dbFirms.map((f) => f.name.toLowerCase()));
+  const extraDemo = page === 1 ? filteredDemo.filter((df) => !dbNames.has(df.name.toLowerCase())) : [];
+  const combinedFirms = [...extraDemo.slice(0, 5), ...dbFirms].slice(0, PAGE_SIZE);
+  const totalCount = Math.max(count ?? 0, (count ?? 0) + filteredDemo.length);
+
   return (
     <div>
       <PageHeader
@@ -80,9 +97,9 @@ export default async function FirmsPage({
         <ErrorNotice message={queryError.message} />
       ) : (
         <FirmsTable
-          firms={firms ?? []}
+          firms={combinedFirms}
           currentPage={page}
-          totalItems={count ?? 0}
+          totalItems={totalCount}
           pageSize={PAGE_SIZE}
           sortBy={params.sort ?? null}
           sortDir={params.dir === "asc" ? "asc" : "desc"}

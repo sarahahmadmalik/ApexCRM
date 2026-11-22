@@ -191,73 +191,80 @@ export function Sidebar({
             </div>
           ))}
 
-          {isAdmin && (
-            <>
-              <p className={cn("px-5 pt-5 pb-2 text-[10px] font-semibold tracking-widest text-white/30 uppercase transition-opacity duration-300", isCompressed ? "opacity-0 h-0 p-0 overflow-hidden" : "opacity-100")}>
+              {/* Management Section (User Management for admins + Settings for everyone) */}
+              <p
+                className={cn(
+                  "px-5 pt-5 pb-2 text-[10px] font-semibold tracking-widest text-white/30 uppercase transition-opacity duration-300",
+                  isCompressed ? "h-0 overflow-hidden p-0 opacity-0" : "opacity-100"
+                )}
+              >
                 Management
               </p>
-              <nav className={cn("space-y-0.5", isCompressed ? "px-2 pt-4" : "px-3")}>
-                {ADMIN_NAV.map((item) => {
-                  const active = isActive(item.href);
-                  const Icon = item.icon;
-                  return (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      title={isCompressed ? item.label : undefined}
-                      className={cn(
-                        "group relative flex items-center gap-3 rounded-lg py-2.5 text-sm font-medium transition-all duration-150",
-                        isCompressed ? "justify-center px-0" : "px-3",
-                        active
-                          ? cn("nav-active-bar bg-white/10 text-white", isCompressed && "nav-active-bar-compact")
-                          : "text-white/55 hover:bg-white/5 hover:text-white/90"
-                      )}
-                    >
-                      <Icon className={cn("h-5 w-5 shrink-0 transition-colors duration-150", active ? "text-brand-400" : "text-white/40 group-hover:text-white/70")} />
-                      {!isCompressed && <span className="truncate">{item.label}</span>}
-                    </Link>
-                  );
-                })}
+              <nav className={cn("space-y-0.5", isCompressed ? "px-2 pt-2" : "px-3")}>
+                {isAdmin &&
+                  ADMIN_NAV.map((item) => {
+                    const active = isActive(item.href);
+                    const Icon = item.icon;
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        title={isCompressed ? item.label : undefined}
+                        className={cn(
+                          "group relative flex items-center gap-3 rounded-lg py-2 text-sm font-medium transition-all duration-150",
+                          isCompressed ? "justify-center px-0" : "px-3",
+                          active
+                            ? cn("nav-active-bar bg-white/10 text-white", isCompressed && "nav-active-bar-compact")
+                            : "text-white/55 hover:bg-white/5 hover:text-white/90"
+                        )}
+                      >
+                        <Icon
+                          className={cn(
+                            "h-5 w-5 shrink-0 transition-colors duration-150",
+                            active ? "text-brand-400" : "text-white/40 group-hover:text-white/70"
+                          )}
+                        />
+                        {!isCompressed && <span className="truncate">{item.label}</span>}
+                      </Link>
+                    );
+                  })}
+
+                <Link
+                  href="/settings"
+                  title={isCompressed ? "Settings" : undefined}
+                  className={cn(
+                    "group relative flex items-center gap-3 rounded-lg py-2 text-sm font-medium transition-all duration-150",
+                    isCompressed ? "justify-center px-0" : "px-3",
+                    isActive("/settings")
+                      ? cn("nav-active-bar bg-white/10 text-white", isCompressed && "nav-active-bar-compact")
+                      : "text-white/55 hover:bg-white/5 hover:text-white/90"
+                  )}
+                >
+                  <Settings
+                    className={cn(
+                      "h-5 w-5 shrink-0 transition-all duration-300 group-hover:rotate-45",
+                      isActive("/settings") ? "text-brand-400" : "text-white/40 group-hover:text-white/70"
+                    )}
+                  />
+                  {!isCompressed && <span className="truncate">Settings</span>}
+                </Link>
               </nav>
-            </>
-          )}
 
-
-
-        <div className="mt-auto space-y-0.5 border-t border-white/10 p-3">
-          <Link
-            href="/settings"
-            title={isCompressed ? "Settings" : undefined}
-            className={cn(
-              "group relative flex items-center gap-3 rounded-lg py-2.5 text-sm font-medium transition-all duration-150",
-              isCompressed ? "justify-center px-0" : "px-3",
-              isActive("/settings")
-                ? cn("nav-active-bar bg-white/10 text-white", isCompressed && "nav-active-bar-compact")
-                : "text-white/55 hover:bg-white/5 hover:text-white/90"
-            )}
-          >
-            <Settings
-              className={cn(
-                "h-5 w-5 shrink-0 transition-all duration-300 group-hover:rotate-45",
-                isActive("/settings") ? "text-brand-400" : "text-white/40 group-hover:text-white/70"
-              )}
-            />
-            {!isCompressed && <span className="truncate">Settings</span>}
-          </Link>
-          <form action={signOut}>
-            <button
-              type="submit"
-              title={isCompressed ? "Sign out" : undefined}
-              className={cn(
-                "flex w-full items-center gap-3 rounded-lg py-1.5 text-sm font-medium text-white/40 transition-colors hover:bg-white/5 hover:text-white/80 cursor-pointer",
-                isCompressed ? "justify-center px-0" : "px-3"
-              )}
-            >
-              <LogOut className="h-5 w-5 shrink-0" />
-              {!isCompressed && <span>Sign out</span>}
-            </button>
-          </form>
-        </div>
+              <div className="mt-auto border-t border-white/10 p-3">
+                <form action={signOut}>
+                  <button
+                    type="submit"
+                    title={isCompressed ? "Sign out" : undefined}
+                    className={cn(
+                      "flex w-full cursor-pointer items-center gap-3 rounded-lg py-2 text-sm font-medium text-red-400 transition-colors hover:bg-red-500/10 hover:text-red-300",
+                      isCompressed ? "justify-center px-0" : "px-3"
+                    )}
+                  >
+                    <LogOut className="h-5 w-5 shrink-0" />
+                    {!isCompressed && <span>Sign out</span>}
+                  </button>
+                </form>
+              </div>
         </div>
       </aside>
     </>

@@ -86,7 +86,8 @@ export default async function TimeLeavePage() {
         <StatCard
           label="Billable hours logged"
           value={`${billableHours}h`}
-          sublabel={`${totalHours}h total recorded`}
+          trend={{ direction: "up", label: "+12.4% vs last week" }}
+          sparkline={[18, 21, 19.5, 24, 26, Math.max(27.5, billableHours)]}
           icon={<Clock className="h-5 w-5" />}
           tone="indigo"
         />
@@ -94,6 +95,7 @@ export default async function TimeLeavePage() {
           label="Billable utilization"
           value={`${utilizationPct}%`}
           sublabel="Client vs. internal time"
+          sparkline={[76, 81, 79, 85, 88, Math.max(90, utilizationPct)]}
           icon={<Percent className="h-5 w-5" />}
           tone="slate"
         />

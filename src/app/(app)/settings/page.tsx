@@ -1,8 +1,9 @@
-import { User, Briefcase, CalendarRange, Wallet, FileSignature, UserX } from "lucide-react";
+import { Briefcase, CalendarRange, Wallet, FileSignature, UserX } from "lucide-react";
 import { Card, CardHeader } from "@/components/ui/card";
 import { DownloadMenu } from "@/components/ui/download-menu";
 import { Badge } from "@/components/ui/badge";
 import { AppearanceCard } from "@/components/profile/appearance-card";
+import { ProfileAvatarCard } from "@/components/profile/avatar-uploader";
 import { PageHeader } from "@/components/ui/page-header";
 import { SettingsTabs, type SettingsTab } from "@/components/profile/settings-tabs";
 import { AssistantCard } from "@/components/profile/assistant-card";
@@ -45,24 +46,13 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
       content: (
         <>
       <Card>
-        <CardHeader title="Account" description={`Your access in the ${appUser.workspaceName} workspace, managed by the workspace admin.`} />
-        <div className="flex items-center gap-4 p-5">
-          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-brand-500 text-white">
-            <User className="h-6 w-6" />
-          </div>
-          <div className="min-w-0">
-            <p className="truncate text-base font-semibold text-gray-900 dark:text-gray-100">{appUser.full_name}</p>
-            <p className="truncate text-sm text-gray-500 dark:text-gray-400">{appUser.email}</p>
-            <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
-              <span className="inline-flex items-center rounded-full bg-brand-50 px-2 py-0.5 text-[11px] font-semibold tracking-wide text-brand-700 uppercase dark:bg-brand-500/10 dark:text-brand-300">
-                {appUser.role}
-              </span>
-              <span className="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold tracking-wide text-slate-600 uppercase dark:bg-white/10 dark:text-slate-300">
-                {appUser.isAdmin ? "Admin" : "User"} account
-              </span>
-            </div>
-          </div>
-        </div>
+        <CardHeader title="Account" description={`Your profile picture and access in the ${appUser.workspaceName} workspace.`} />
+        <ProfileAvatarCard
+          fullName={appUser.full_name}
+          email={appUser.email ?? ""}
+          role={appUser.role}
+          isAdmin={appUser.isAdmin}
+        />
       </Card>
         </>
       ),

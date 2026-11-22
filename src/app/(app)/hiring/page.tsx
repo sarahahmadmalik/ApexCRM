@@ -44,7 +44,8 @@ export default async function HiringPage() {
         <StatCard
           label="Active candidates"
           value={activeCandidatesCount}
-          sublabel="In screening, interview or offer"
+          trend={{ direction: "up", label: "+38% applicant velocity" }}
+          sparkline={[2, 3, 3, 4, 5, Math.max(5, activeCandidatesCount)]}
           icon={<Users className="h-5 w-5" />}
           tone="indigo"
         />

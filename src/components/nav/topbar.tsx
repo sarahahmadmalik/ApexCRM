@@ -6,6 +6,7 @@ import type { AccountRole } from "@/lib/permissions";
 import { GlobalSearch } from "@/components/nav/global-search";
 import { DropdownMenu } from "@/components/ui/dropdown-menu";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
+import { useStoredAvatar } from "@/components/profile/avatar-uploader";
 import { signOut } from "@/app/(app)/actions";
 
 export function Topbar({
@@ -25,6 +26,8 @@ export function Topbar({
   userEmail: string;
   onMenuClick?: () => void;
 }) {
+  const avatarUrl = useStoredAvatar(userEmail);
+
   return (
     <header className="sticky top-0 z-30 flex h-[72px] shrink-0 items-center gap-3 border-b border-gray-200 bg-white/90 px-4 backdrop-blur-md sm:px-6 dark:border-white/10 dark:bg-navy-900/90">
       {/* Mobile menu trigger */}
@@ -53,9 +56,14 @@ export function Topbar({
               className="ml-1 flex cursor-pointer items-center gap-2 rounded-full border border-gray-100 bg-white p-1 pr-3 shadow-sm transition-colors hover:bg-gray-50 dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/10"
             >
               <div className="relative shrink-0">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-500 text-white">
-                  <User className="h-4 w-4" />
-                </div>
+                {avatarUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={avatarUrl} alt={userName} className="h-8 w-8 rounded-full object-cover" />
+                ) : (
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-500 text-white">
+                    <User className="h-4 w-4" />
+                  </div>
+                )}
                 <span className="absolute right-0 bottom-0 h-2.5 w-2.5 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-navy-900" />
               </div>
               <div className="hidden flex-col items-start text-left sm:flex">

@@ -78,3 +78,20 @@ export async function updateMyLocation(country: string) {
   revalidatePath("/settings");
   revalidatePath("/employees");
 }
+
+/** Saves a compressed avatar data URL or clears it in the user's Supabase Auth metadata. */
+export async function updateAvatarUrl(avatarDataUrl: string | null) {
+  const appUser = await getCurrentAppUser();
+  if (!appUser) throw new Error("Unauthorized");
+  if (avatarDataUrl && avatarDataUrl.length > 250_000) {
+    throw new Error("Profile picture is too large. Please choose a smaller image.");
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase.auth.updateUser({
+    data: { avatar_url: avatarDataUrl },
+  });
+  if (error) throw new Error(error.message);
+  revalidatePath("/", "layout");
+  revalidatePath("/settings");
+}

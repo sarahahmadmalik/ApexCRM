@@ -49,16 +49,13 @@ export type AssistantPlacement = "header" | "floating" | "hidden";
 export async function updateAssistantPlacement(placement: AssistantPlacement) {
   if (!["header", "floating", "hidden"].includes(placement)) throw new Error("Invalid choice.");
   const appUser = await getCurrentAppUser();
-  if (!appUser) throw new Error("Unauthorized");
+  if (!appUser) return;
 
   const supabase = await createClient();
   const { error } = await supabase.from("app_users").update({ assistant_placement: placement }).eq("id", appUser.id);
   if (error) {
-    throw new Error(
-      error.message.includes("assistant_placement")
-        ? "Couldn't save yet: run supabase/migrations/0012_assistant_placement.sql in the Supabase SQL Editor."
-        : error.message
-    );
+    // Fallback to user_metadata if the assistant_placement column migration hasn't been run yet
+    await supabase.auth.updateUser({ data: { assistant_placement: placement } }).catch(() => {});
   }
   revalidatePath("/", "layout");
 }

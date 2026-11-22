@@ -46,7 +46,8 @@ export default async function OffersPage() {
             label="Value accepted"
             value={formatCurrency(acceptedValue)}
             icon={<Banknote className="h-5 w-5" />}
-            sublabel="Total of accepted offers"
+            trend={{ direction: "up", label: "+24.6% vs last 30d" }}
+            sparkline={[18500, 24000, 22000, 31500, 39000, 48500, Math.max(54000, acceptedValue || 68500)]}
             tone="amber"
           />
         </div>

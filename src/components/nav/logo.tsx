@@ -1,6 +1,6 @@
 /**
- * Minimalist Apex brand mark and wordmark — clean architectural delta/apex
- * geometry paired with refined typography. No pills, tags, or subtitles.
+ * Minimalist Apex CRM brand mark and wordmark — tight optical spacing between
+ * the architectural delta mark, "apex" logotype, and smaller cyan "CRM" label.
  */
 export function Logo({
   dark = false,
@@ -19,19 +19,18 @@ export function Logo({
     return (
       <svg
         className={className}
-        viewBox="0 0 48 48"
+        viewBox="0 0 44 44"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
         role="img"
-        aria-label="Apex"
+        aria-label="Apex CRM"
       >
-        {/* Minimalist architectural Apex mark: two interlocking geometric ribbons */}
         <path
-          d="M24 6 L8 40 H17.5 L24 25.5 L30.5 40 H40 L24 6 Z"
+          d="M22 5 L6 39 H15.5 L22 24.5 L28.5 39 H38 L22 5 Z"
           fill={primary}
         />
         <path
-          d="M24 25.5 L19.5 35.5 H28.5 L24 25.5 Z"
+          d="M22 24.5 L17.5 34.5 H26.5 L22 24.5 Z"
           fill={accent}
         />
       </svg>
@@ -41,33 +40,44 @@ export function Logo({
   return (
     <svg
       className={className}
-      viewBox="0 0 150 48"
+      viewBox="0 0 176 44"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       role="img"
-      aria-label="Apex"
+      aria-label="Apex CRM"
     >
-      {/* Minimalist architectural Apex mark */}
+      {/* Architectural Apex mark (x: 4..36) */}
       <path
-        d="M24 6 L8 40 H17.5 L24 25.5 L30.5 40 H40 L24 6 Z"
+        d="M20 5 L4 39 H13.5 L20 24.5 L26.5 39 H36 L20 5 Z"
         fill={primary}
       />
       <path
-        d="M24 25.5 L19.5 35.5 H28.5 L24 25.5 Z"
+        d="M20 24.5 L15.5 34.5 H24.5 L20 24.5 Z"
         fill={accent}
       />
 
-      {/* Clean, tag-free logotype without dot */}
+      {/* Tightly kerned "apex" wordmark + smaller cyan "CRM" */}
       <text
-        x="52"
-        y="35"
+        x="40"
+        y="34"
         fontFamily="Poppins, sans-serif"
-        fontSize="32"
+        fontSize="31"
         fontWeight="600"
-        letterSpacing="-0.8"
+        letterSpacing="-0.9"
         fill={primary}
       >
         apex
+      </text>
+      <text
+        x="120"
+        y="34"
+        fontFamily="Poppins, sans-serif"
+        fontSize="14"
+        fontWeight="700"
+        letterSpacing="1.4"
+        fill={accent}
+      >
+        CRM
       </text>
     </svg>
   );
