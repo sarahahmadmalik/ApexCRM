@@ -3,9 +3,9 @@ import { Logo } from "@/components/nav/logo";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 
 const HIGHLIGHTS = [
-  { icon: Building2, title: "Firms & proposals", text: "Every company we've reached out to, and where it stands." },
-  { icon: MapPin, title: "City progress", text: "Track outreach coverage across the European campaign." },
-  { icon: FileText, title: "Contracts, quotes & invoices", text: "Generate and follow up on documents in one place." },
+  { icon: Building2, title: "CRM, proposals & projects", text: "Manage client pipelines, quotes, invoices, and active project delivery." },
+  { icon: MapPin, title: "Hiring, HR & time tracking", text: "Full applicant tracking (ATS), contracts, PTO approvals, and timesheets." },
+  { icon: FileText, title: "Expenses, payroll & analytics", text: "Unified company finance, expense claims, payroll runs, and regional maps." },
 ];
 
 /**
@@ -31,13 +31,13 @@ export function AuthShell({ children }: { children: React.ReactNode }) {
         <div className="relative flex flex-col items-start gap-1.5">
           <Logo dark className="h-16 w-auto xl:h-20" />
           <span className="font-mono-brand text-[10px] font-semibold tracking-widest text-brand-400/70 uppercase">
-            Operations Tracking
+            Enterprise CRM &amp; Operations Suite
           </span>
         </div>
 
         <div className="relative max-w-md">
           <h2 className="font-display text-4xl leading-tight font-bold text-white xl:text-[2.75rem]">
-            Outbound operations, <span className="text-brand-400">in one place.</span>
+            CRM, Talent &amp; Operations, <span className="text-brand-400">in one place.</span>
           </h2>
           <ul className="mt-10 space-y-6">
             {HIGHLIGHTS.map(({ icon: Icon, title, text }) => (
@@ -54,7 +54,7 @@ export function AuthShell({ children }: { children: React.ReactNode }) {
           </ul>
         </div>
 
-        <p className="relative text-xs text-slate-500">&copy; {new Date().getFullYear()} Dua Dev. Internal use only.</p>
+        <p className="relative text-xs text-slate-500">&copy; {new Date().getFullYear()} ApexCRM · Enterprise Operations Showcase.</p>
       </aside>
 
       {/* Form panel */}

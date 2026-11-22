@@ -17,8 +17,8 @@ import "./globals.css";
 import "./dino.css";
 
 export const metadata: Metadata = {
-  title: "Dua Dev Internal Tool",
-  description: "Dua Dev internal outreach and operations tool",
+  title: "ApexCRM · Enterprise CRM & Operations Suite",
+  description: "ApexCRM unified customer relationship, talent, project delivery, and financial operations platform",
 };
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {

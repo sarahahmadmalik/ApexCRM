@@ -11,6 +11,10 @@ import {
   FileSignature,
   FileText,
   Receipt,
+  UserPlus,
+  FolderKanban,
+  CalendarClock,
+  Wallet,
   LogOut,
   X,
   UsersRound,
@@ -23,14 +27,35 @@ import { signOut } from "@/app/(app)/actions";
 import { Logo } from "@/components/nav/logo";
 import { hasAccess, type PageKey, type Permissions } from "@/lib/permissions";
 
-const MAIN_NAV: { href: string; label: string; icon: typeof LayoutDashboard; page: PageKey }[] = [
-  { href: "/overview",   label: "Overview",         icon: LayoutDashboard, page: "dashboard" },
-  { href: "/firms",      label: "Firms / Proposals", icon: Building2,       page: "firms" },
-  { href: "/cities",     label: "City Progress",     icon: MapPinned,       page: "cities" },
-  { href: "/employees",  label: "Employees",         icon: Users,           page: "employees" },
-  { href: "/contracts",  label: "Contracts",         icon: FileSignature,   page: "contracts" },
-  { href: "/offers",     label: "Offers",            icon: FileText,        page: "offers" },
-  { href: "/invoices",   label: "Invoices",          icon: Receipt,         page: "invoices" },
+type NavItem = { href: string; label: string; icon: typeof LayoutDashboard; page: PageKey };
+
+const NAV_SECTIONS: { title: string; items: NavItem[] }[] = [
+  {
+    title: "CRM & Outbound",
+    items: [
+      { href: "/overview", label: "Overview", icon: LayoutDashboard, page: "dashboard" },
+      { href: "/firms", label: "Firms / Proposals", icon: Building2, page: "firms" },
+      { href: "/cities", label: "City Progress", icon: MapPinned, page: "cities" },
+      { href: "/offers", label: "Offers", icon: FileText, page: "offers" },
+      { href: "/invoices", label: "Invoices", icon: Receipt, page: "invoices" },
+    ],
+  },
+  {
+    title: "People & Talent",
+    items: [
+      { href: "/hiring", label: "Hiring & ATS", icon: UserPlus, page: "hiring" },
+      { href: "/employees", label: "Employees", icon: Users, page: "employees" },
+      { href: "/contracts", label: "Contracts", icon: FileSignature, page: "contracts" },
+      { href: "/time-leave", label: "Time & Leave", icon: CalendarClock, page: "time_leave" },
+    ],
+  },
+  {
+    title: "Delivery & Finance",
+    items: [
+      { href: "/projects", label: "Projects & Tasks", icon: FolderKanban, page: "projects" },
+      { href: "/expenses", label: "Expenses & Payroll", icon: Wallet, page: "expenses" },
+    ],
+  },
 ];
 
 /** Admin-only; never part of the per-page permissions, so it can't be granted to a member. */
@@ -55,7 +80,10 @@ export function Sidebar({
   const pathname = usePathname();
   const [logoHovered, setLogoHovered] = useState(false);
   // Only what this user may open — hiding is cosmetic, the server enforces it too.
-  const mainNav = MAIN_NAV.filter((item) => hasAccess(permissions, item.page));
+  const visibleSections = NAV_SECTIONS.map((sec) => ({
+    ...sec,
+    items: sec.items.filter((item) => hasAccess(permissions, item.page)),
+  })).filter((sec) => sec.items.length > 0);
 
   function isActive(href: string) {
     return pathname === href || pathname.startsWith(href + "/");
@@ -96,7 +124,7 @@ export function Sidebar({
             />
             {!isCompressed && (
               <span className="font-mono-brand text-[9px] font-semibold tracking-widest text-brand-400/70 uppercase whitespace-nowrap">
-                Operations Tracking
+                Enterprise Suite
               </span>
             )}
           </div>
@@ -126,37 +154,47 @@ export function Sidebar({
         </div>
 
         <div className="flex flex-1 flex-col overflow-y-auto pb-3">
-          <p className={cn("px-5 pt-5 pb-2 text-[10px] font-semibold tracking-widest text-white/30 uppercase transition-opacity duration-300", isCompressed ? "opacity-0 h-0 p-0 overflow-hidden" : "opacity-100")}>
-            Outbound Operations
-          </p>
-          <nav className={cn("nav-item-stagger space-y-0.5", isCompressed ? "px-2 pt-4" : "px-3")}>
-            {mainNav.map((item) => {
-              const active = isActive(item.href);
-              const Icon = item.icon;
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  title={isCompressed ? item.label : undefined}
-                  className={cn(
-                    "group relative flex items-center gap-3 rounded-lg py-2.5 text-sm font-medium transition-all duration-150",
-                    isCompressed ? "justify-center px-0" : "px-3",
-                    active
-                      ? cn("nav-active-bar bg-white/10 text-white", isCompressed && "nav-active-bar-compact")
-                      : "text-white/55 hover:bg-white/5 hover:text-white/90"
-                  )}
-                >
-                  <Icon
-                    className={cn(
-                      "h-5 w-5 shrink-0 transition-colors duration-150",
-                      active ? "text-brand-400" : "text-white/40 group-hover:text-white/70"
-                    )}
-                  />
-                  {!isCompressed && <span className="truncate">{item.label}</span>}
-                </Link>
-              );
-            })}
-          </nav>
+          {visibleSections.map((section, sectionIdx) => (
+            <div key={section.title}>
+              <p
+                className={cn(
+                  "px-5 pb-2 text-[10px] font-semibold tracking-widest text-white/30 uppercase transition-opacity duration-300",
+                  sectionIdx === 0 ? "pt-4" : "pt-5",
+                  isCompressed ? "h-0 overflow-hidden p-0 opacity-0" : "opacity-100"
+                )}
+              >
+                {section.title}
+              </p>
+              <nav className={cn("nav-item-stagger space-y-0.5", isCompressed ? "px-2 pt-2" : "px-3")}>
+                {section.items.map((item) => {
+                  const active = isActive(item.href);
+                  const Icon = item.icon;
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      title={isCompressed ? item.label : undefined}
+                      className={cn(
+                        "group relative flex items-center gap-3 rounded-lg py-2 text-sm font-medium transition-all duration-150",
+                        isCompressed ? "justify-center px-0" : "px-3",
+                        active
+                          ? cn("nav-active-bar bg-white/10 text-white", isCompressed && "nav-active-bar-compact")
+                          : "text-white/55 hover:bg-white/5 hover:text-white/90"
+                      )}
+                    >
+                      <Icon
+                        className={cn(
+                          "h-5 w-5 shrink-0 transition-colors duration-150",
+                          active ? "text-brand-400" : "text-white/40 group-hover:text-white/70"
+                        )}
+                      />
+                      {!isCompressed && <span className="truncate">{item.label}</span>}
+                    </Link>
+                  );
+                })}
+              </nav>
+            </div>
+          ))}
 
           {isAdmin && (
             <>

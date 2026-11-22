@@ -11,7 +11,7 @@ export async function signOut() {
 }
 
 export type GlobalSearchResult = {
-  type: "firm" | "employee" | "city" | "offer" | "invoice" | "contract";
+  type: "firm" | "employee" | "city" | "offer" | "invoice" | "contract" | "candidate" | "project";
   id: string;
   title: string;
   subtitle: string;
@@ -35,7 +35,7 @@ export async function globalSearch(query: string): Promise<GlobalSearchResult[]>
 
   // Only search the areas this user can open (RLS would filter them anyway;
   // this also stops suggesting links to pages they'd be redirected away from).
-  const [firms, employees, offers, invoices, contracts] = await Promise.all([
+  const [firms, employees, offers, invoices, contracts, candidates, projects] = await Promise.all([
     can("firms")
       ? supabase.from("firms").select("id, name, city, country").ilike("name", `%${q}%`).limit(5)
       : none,
@@ -63,6 +63,12 @@ export async function globalSearch(query: string): Promise<GlobalSearchResult[]>
           .ilike("employees.full_name", `%${q}%`)
           .limit(5)
       : none,
+    can("hiring")
+      ? supabase.from("job_candidates").select("id, full_name, stage").ilike("full_name", `%${q}%`).limit(4)
+      : none,
+    can("projects")
+      ? supabase.from("projects").select("id, name, client_name").ilike("name", `%${q}%`).limit(4)
+      : none,
   ]);
 
   const results: GlobalSearchResult[] = [];
@@ -84,6 +90,24 @@ export async function globalSearch(query: string): Promise<GlobalSearchResult[]>
   (contracts.data ?? []).forEach((c) => {
     const employeeName = (c as unknown as { employees: { full_name: string } | null }).employees?.full_name ?? "Employee";
     results.push({ type: "contract", id: c.id, title: `${employeeName}'s contract`, subtitle: c.status === "final" ? "Document ready" : "Template pending", href: `/contracts?q=${encodeURIComponent(employeeName)}` });
+  });
+  (candidates.data ?? []).forEach((cand) => {
+    results.push({
+      type: "candidate",
+      id: cand.id,
+      title: cand.full_name,
+      subtitle: `Candidate · ${cand.stage}`,
+      href: "/hiring",
+    });
+  });
+  (projects.data ?? []).forEach((proj) => {
+    results.push({
+      type: "project",
+      id: proj.id,
+      title: proj.name,
+      subtitle: proj.client_name ? `Project for ${proj.client_name}` : "Project",
+      href: "/projects",
+    });
   });
 
   const cityMatches = !can("firms")

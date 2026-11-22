@@ -131,7 +131,7 @@ export function AssistantPanel() {
       <div className="relative flex items-center gap-3">
         <AiOrb size={42} />
         <div className="min-w-0 flex-1">
-          <h2 className="font-display text-base font-semibold sm:text-lg">Dua Dev Assistant</h2>
+          <h2 className="font-display text-base font-semibold sm:text-lg">ApexCRM Assistant</h2>
           <p className="flex items-center gap-1.5 text-xs text-white/70">
             <span className="relative flex h-1.5 w-1.5">
               <span className="absolute inset-0 animate-ping rounded-full bg-emerald-400/80" />
@@ -158,7 +158,7 @@ export function AssistantPanel() {
         onClose={() => setOpen(false)}
         position="right"
         size="md"
-        title="Dua Dev Assistant"
+        title="ApexCRM Assistant"
         header={header}
         footer={
           <div className="space-y-3">

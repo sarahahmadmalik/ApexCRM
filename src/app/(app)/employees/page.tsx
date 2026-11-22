@@ -21,7 +21,7 @@ export default async function EmployeesPage() {
     <div>
       <PageHeader
         title="Employees"
-        description="Team roster, contact details and contract status for everyone at Dua Dev"
+        description="Team roster, contact details and contract status across the organization"
         actions={<AddEmployeeButton />}
       />
 

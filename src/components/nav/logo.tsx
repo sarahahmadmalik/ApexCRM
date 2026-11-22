@@ -1,9 +1,7 @@
 /**
- * Dua Dev wordmark — the real mark, lifted directly from the marketing site's
- * own Navbar component (an inline SVG: "DUA" 800-weight + "DEV" 400-weight in
- * Poppins, a cyan underline bar, and a cyan accent square). `dark` swaps the
- * text fill for use on the navy sidebar; `showTagline` adds the small
- * "Building Scalable Software Solutions" line used under the mark on the site.
+ * ApexCRM wordmark — website showcase brand using the same Poppins geometric
+ * typography, cyan underline bar, and cyan accent square. `dark` swaps the
+ * text fill for use on the navy sidebar; `showTagline` adds the subtitle.
  */
 export function Logo({
   dark = false,
@@ -19,26 +17,24 @@ export function Logo({
   const textColor = dark ? "#ffffff" : "#0f172a";
 
   if (compact) {
-    // Icon-only derivative of the real mark: "DD" (the initials of DUA DEV,
-    // bold + regular exactly like the full wordmark), the cyan underline bar
-    // under the first D, and the cyan accent dot.
+    // Icon-only derivative: "AP" monogram with the cyan underline bar and accent dot.
     return (
       <svg
         className={className}
-        viewBox="0 0 100 84"
+        viewBox="0 0 104 84"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
         role="img"
-        aria-label="DUA DEV"
+        aria-label="APEX CRM"
       >
-        <text x="0" y="56" fontFamily="Poppins, sans-serif" fontSize="56" fontWeight="800" fill={textColor}>
-          D
+        <text x="0" y="56" fontFamily="Poppins, sans-serif" fontSize="54" fontWeight="800" fill={textColor}>
+          A
         </text>
-        <text x="40" y="56" fontFamily="Poppins, sans-serif" fontSize="56" fontWeight="400" fill={textColor}>
-          D
+        <text x="42" y="56" fontFamily="Poppins, sans-serif" fontSize="54" fontWeight="400" fill={textColor}>
+          P
         </text>
-        <rect x="0" y="64" width="36" height="6" fill="hsl(187 85% 43%)" rx="3" />
-        <rect x="82" y="42" width="14" height="14" fill="hsl(187 85% 43%)" rx="2" />
+        <rect x="0" y="64" width="38" height="6" fill="hsl(187 85% 43%)" rx="3" />
+        <rect x="84" y="42" width="14" height="14" fill="hsl(187 85% 43%)" rx="2" />
       </svg>
     );
   }
@@ -46,20 +42,20 @@ export function Logo({
   const mark = (
     <svg
       className={className}
-      viewBox="0 0 290 95"
+      viewBox="0 0 330 95"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       role="img"
-      aria-label="DUA DEV Logo"
+      aria-label="APEX CRM Logo"
     >
-      <text x="0" y="75" fontFamily="Poppins, sans-serif" fontSize="60" fontWeight="800" fill={textColor}>
-        DUA
+      <text x="0" y="75" fontFamily="Poppins, sans-serif" fontSize="58" fontWeight="800" fill={textColor}>
+        APEX
       </text>
-      <text x="130" y="75" fontFamily="Poppins, sans-serif" fontSize="60" fontWeight="400" fill={textColor}>
-        DEV
+      <text x="164" y="75" fontFamily="Poppins, sans-serif" fontSize="58" fontWeight="400" fill={textColor}>
+        CRM
       </text>
-      <rect x="0" y="85" width="115" height="6" fill="hsl(187 85% 43%)" rx="3" />
-      <rect x="260" y="55" width="20" height="20" fill="hsl(187 85% 43%)" />
+      <rect x="0" y="85" width="148" height="6" fill="hsl(187 85% 43%)" rx="3" />
+      <rect x="304" y="55" width="20" height="20" fill="hsl(187 85% 43%)" rx="2" />
     </svg>
   );
 
@@ -71,7 +67,7 @@ export function Logo({
       <span
         className={`-mt-1 text-[9px] font-medium leading-none whitespace-nowrap ${dark ? "text-white/70" : "text-gray-500"}`}
       >
-        Building <span className="text-brand-500">Scalable Software</span> Solutions
+        Unified <span className="text-brand-500">CRM &amp; Operations</span> Suite
       </span>
     </span>
   );

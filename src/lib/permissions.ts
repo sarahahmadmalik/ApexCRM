@@ -13,10 +13,14 @@ export const PAGES = [
   { key: "dashboard", label: "Overview", href: "/overview" },
   { key: "firms", label: "Firms / Proposals", href: "/firms" },
   { key: "cities", label: "City Progress", href: "/cities" },
-  { key: "employees", label: "Employees", href: "/employees" },
-  { key: "contracts", label: "Contracts", href: "/contracts" },
   { key: "offers", label: "Offers", href: "/offers" },
   { key: "invoices", label: "Invoices", href: "/invoices" },
+  { key: "hiring", label: "Hiring & ATS", href: "/hiring" },
+  { key: "employees", label: "Employees", href: "/employees" },
+  { key: "contracts", label: "Contracts", href: "/contracts" },
+  { key: "time_leave", label: "Time & Leave", href: "/time-leave" },
+  { key: "projects", label: "Projects & Tasks", href: "/projects" },
+  { key: "expenses", label: "Expenses & Payroll", href: "/expenses" },
 ] as const;
 
 export type PageKey = (typeof PAGES)[number]["key"];

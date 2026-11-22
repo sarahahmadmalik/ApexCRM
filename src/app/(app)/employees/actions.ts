@@ -225,7 +225,7 @@ export async function downloadContractDocument(id: string, format: DocumentForma
         ["Status", contract.status === "final" ? "Final" : "Draft"],
       ],
       intro: [
-        `This employment contract is made between Dua Dev UG (haftungsbeschränkt) ("the Company") and ${name} ("the Employee").`,
+        `This employment contract is made between ApexOps Technologies GmbH ("the Company") and ${name} ("the Employee").`,
       ],
       sections: [
         {

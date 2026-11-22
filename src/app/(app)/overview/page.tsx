@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import Link from "next/link";
 import { Card, CardHeader } from "@/components/ui/card";
 import { MapWithPeek } from "@/components/dashboard/map-with-peek";
 import { CountryPills } from "@/components/dashboard/country-pills";
@@ -8,10 +9,27 @@ import { PageHeader } from "@/components/ui/page-header";
 import { ErrorNotice } from "@/components/ui/error-notice";
 import { COUNTRY_NAMES, citiesForCountry } from "@/lib/data/geo";
 import { buildTrend, pickTrendBaseline, sparklinePath } from "@/lib/data/trends";
-import { TrendingUp, TrendingDown, Minus } from "lucide-react";
-import { cn } from "@/lib/utils";
+import {
+  TrendingUp,
+  TrendingDown,
+  Minus,
+  UserPlus,
+  FolderKanban,
+  CalendarClock,
+  Wallet,
+  ArrowUpRight,
+} from "lucide-react";
+import { cn, formatCurrency } from "@/lib/utils";
 import type { CityManualStatus, FirmStatus } from "@/lib/types/database";
 import { requirePageAccess } from "@/lib/auth/guards";
+import {
+  DEMO_EXPENSE_CLAIMS,
+  DEMO_JOB_CANDIDATES,
+  DEMO_JOB_OPENINGS,
+  DEMO_LEAVE_REQUESTS,
+  DEMO_PAYROLL_RUNS,
+  DEMO_PROJECTS,
+} from "@/lib/data/showcase-seed";
 
 async function countByStatus(
   supabase: Awaited<ReturnType<typeof createClient>>,
@@ -51,6 +69,12 @@ export default async function OverviewPage({
     allFirmsForCountry,
     activity,
     snapshots,
+    openingsRes,
+    candidatesRes,
+    projectsRes,
+    leavesRes,
+    expensesRes,
+    payrollRes,
   ] = await Promise.all([
     countByStatus(supabase, "in_progress"),
     countByStatus(supabase, "sent"),
@@ -61,7 +85,20 @@ export default async function OverviewPage({
     supabase.from("firms").select("id, name, status, country, state, city").eq("country", selectedCountry).limit(1000),
     supabase.from("firm_status_history_feed").select("*").limit(8),
     supabase.from("dashboard_daily_snapshot").select("*").order("snapshot_date", { ascending: true }),
+    supabase.from("job_openings").select("id, status"),
+    supabase.from("job_candidates").select("id, stage"),
+    supabase.from("projects").select("id, status, budget, progress"),
+    supabase.from("leave_requests").select("id, status, days_count"),
+    supabase.from("expense_claims").select("id, status, amount"),
+    supabase.from("payroll_runs").select("id, gross_total, period_label").order("pay_date", { ascending: false }).limit(1),
   ]);
+
+  const openingsList = openingsRes.error ? DEMO_JOB_OPENINGS : (openingsRes.data ?? []);
+  const candidatesList = candidatesRes.error ? DEMO_JOB_CANDIDATES : (candidatesRes.data ?? []);
+  const projectsList = projectsRes.error ? DEMO_PROJECTS : (projectsRes.data ?? []);
+  const leavesList = leavesRes.error ? DEMO_LEAVE_REQUESTS : (leavesRes.data ?? []);
+  const expensesList = expensesRes.error ? DEMO_EXPENSE_CLAIMS : (expensesRes.data ?? []);
+  const payrollList = payrollRes.error ? DEMO_PAYROLL_RUNS : (payrollRes.data ?? []);
 
   const allCityRows = cityRows.data ?? [];
 
@@ -136,7 +173,10 @@ export default async function OverviewPage({
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Overview" description="Monitor firm engagement and geographic expansion across the European campaign" />
+      <PageHeader
+        title="Executive Overview"
+        description="Unified CRM outreach, talent acquisition, client project delivery, and financial operations command center"
+      />
 
       {pageError && <ErrorNotice message={pageError.message} />}
 
@@ -234,6 +274,104 @@ export default async function OverviewPage({
             </span>
           </div>
         </Card>
+      </div>
+
+      {/* Enterprise Modules Quick-Pulse Strip */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <Link
+          href="/hiring"
+          className="group flex flex-col justify-between rounded-2xl border border-gray-200 bg-white p-4 shadow-xs transition-all hover:-translate-y-0.5 hover:border-brand-400 hover:shadow-md dark:border-white/10 dark:bg-navy-900 dark:hover:border-brand-400"
+        >
+          <div className="flex items-center justify-between">
+            <span className="inline-flex items-center gap-2 text-xs font-bold tracking-wider text-brand-600 uppercase dark:text-brand-400">
+              <UserPlus className="h-4 w-4" />
+              Hiring &amp; ATS
+            </span>
+            <ArrowUpRight className="h-4 w-4 text-gray-300 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-brand-500" />
+          </div>
+          <div className="mt-3 flex items-baseline justify-between">
+            <div>
+              <p className="font-display text-xl font-bold text-gray-900 dark:text-white">
+                {openingsList.filter((j) => j.status === "open").length} Open Roles
+              </p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                {candidatesList.length} candidates in pipeline ·{" "}
+                {candidatesList.filter((c) => c.stage === "interview" || c.stage === "offer").length} active interviews/offers
+              </p>
+            </div>
+          </div>
+        </Link>
+
+        <Link
+          href="/projects"
+          className="group flex flex-col justify-between rounded-2xl border border-gray-200 bg-white p-4 shadow-xs transition-all hover:-translate-y-0.5 hover:border-brand-400 hover:shadow-md dark:border-white/10 dark:bg-navy-900 dark:hover:border-brand-400"
+        >
+          <div className="flex items-center justify-between">
+            <span className="inline-flex items-center gap-2 text-xs font-bold tracking-wider text-indigo-600 uppercase dark:text-indigo-400">
+              <FolderKanban className="h-4 w-4" />
+              Projects &amp; Tasks
+            </span>
+            <ArrowUpRight className="h-4 w-4 text-gray-300 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-brand-500" />
+          </div>
+          <div className="mt-3 flex items-baseline justify-between">
+            <div>
+              <p className="font-display text-xl font-bold text-gray-900 dark:text-white">
+                {projectsList.filter((p) => p.status === "active").length} Active Projects
+              </p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                {formatCurrency(projectsList.reduce((s, p) => s + Number(p.budget ?? 0), 0))} total portfolio value
+              </p>
+            </div>
+          </div>
+        </Link>
+
+        <Link
+          href="/time-leave"
+          className="group flex flex-col justify-between rounded-2xl border border-gray-200 bg-white p-4 shadow-xs transition-all hover:-translate-y-0.5 hover:border-brand-400 hover:shadow-md dark:border-white/10 dark:bg-navy-900 dark:hover:border-brand-400"
+        >
+          <div className="flex items-center justify-between">
+            <span className="inline-flex items-center gap-2 text-xs font-bold tracking-wider text-emerald-600 uppercase dark:text-emerald-400">
+              <CalendarClock className="h-4 w-4" />
+              Time &amp; Leave
+            </span>
+            <ArrowUpRight className="h-4 w-4 text-gray-300 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-brand-500" />
+          </div>
+          <div className="mt-3 flex items-baseline justify-between">
+            <div>
+              <p className="font-display text-xl font-bold text-gray-900 dark:text-white">
+                {leavesList.filter((l) => l.status === "pending").length} Pending PTO
+              </p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                {leavesList.filter((l) => l.status === "approved").reduce((s, l) => s + Number(l.days_count ?? 0), 0)}{" "}
+                approved leave days scheduled
+              </p>
+            </div>
+          </div>
+        </Link>
+
+        <Link
+          href="/expenses"
+          className="group flex flex-col justify-between rounded-2xl border border-gray-200 bg-white p-4 shadow-xs transition-all hover:-translate-y-0.5 hover:border-brand-400 hover:shadow-md dark:border-white/10 dark:bg-navy-900 dark:hover:border-brand-400"
+        >
+          <div className="flex items-center justify-between">
+            <span className="inline-flex items-center gap-2 text-xs font-bold tracking-wider text-amber-600 uppercase dark:text-amber-400">
+              <Wallet className="h-4 w-4" />
+              Expenses &amp; Payroll
+            </span>
+            <ArrowUpRight className="h-4 w-4 text-gray-300 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-brand-500" />
+          </div>
+          <div className="mt-3 flex items-baseline justify-between">
+            <div>
+              <p className="font-display text-xl font-bold text-gray-900 dark:text-white">
+                {formatCurrency(payrollList[0]?.gross_total ?? 0)}
+              </p>
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                {payrollList[0]?.period_label ?? "Current"} payroll ·{" "}
+                {expensesList.filter((e) => e.status === "pending").length} pending claims
+              </p>
+            </div>
+          </div>
+        </Link>
       </div>
 
       <Card className="card-in card-in-4 shadow-sm">

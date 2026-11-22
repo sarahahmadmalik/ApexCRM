@@ -2,7 +2,18 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Search, Building2, Users, MapPinned, FileSpreadsheet, Receipt, FileSignature, Loader2 } from "lucide-react";
+import {
+  Search,
+  Building2,
+  Users,
+  MapPinned,
+  FileSpreadsheet,
+  Receipt,
+  FileSignature,
+  UserPlus,
+  FolderKanban,
+  Loader2,
+} from "lucide-react";
 import { globalSearch, type GlobalSearchResult } from "@/app/(app)/actions";
 import { Input } from "@/components/ui/field";
 import { cn } from "@/lib/utils";
@@ -14,6 +25,8 @@ const TYPE_ICON = {
   offer: FileSpreadsheet,
   invoice: Receipt,
   contract: FileSignature,
+  candidate: UserPlus,
+  project: FolderKanban,
 };
 
 export function GlobalSearch() {
@@ -76,7 +89,7 @@ export function GlobalSearch() {
           setOpen(true);
         }}
         onFocus={() => setOpen(true)}
-        placeholder="Search firms, offers, invoices, employees..."
+        placeholder="Search firms, projects, candidates, offers, invoices..."
         className="h-9 pl-9"
       />
 

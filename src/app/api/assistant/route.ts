@@ -28,10 +28,14 @@ const PAGE_NAMES: Record<string, string> = {
   contracts: "Contracts",
   offers: "Offers",
   invoices: "Invoices",
+  hiring: "Hiring & ATS",
+  projects: "Projects & Tasks",
+  time_leave: "Time & Leave",
+  expenses: "Expenses & Payroll",
 };
 
 function systemPrompt(name: string, accessible: string[], page?: string) {
-  return `You are the built-in assistant of the Dua Dev UG internal tool, a small German software company that prospects law firms (the "Firms" pipeline), sends offers (Angebote), invoices (Rechnungen), manages employees and contracts, and tracks which cities it has covered.
+  return `You are the built-in assistant of ApexCRM, a unified CRM and enterprise operations platform that manages client firms, sends offers (Angebote), invoices (Rechnungen), manages hiring (ATS), employees, contracts, projects, time & leave, and expenses & payroll.
 Today is ${new Date().toISOString().slice(0, 10)}. You are talking to ${name}, who can use: ${accessible.join(", ") || "nothing"}. All money is EUR.
 ${page ? `The user opened you from the ${page} page, so questions like "this", "these" or "here" most likely mean that area. Prefer it, but you can answer about anything they can access.` : ""}
 

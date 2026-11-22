@@ -75,30 +75,30 @@ export function SiteLoader({ showcase = false, caption = "Loading your workspace
     <div
       className={["site-loader", showcase ? "site-loader--showcase" : "", hiding ? "site-loader--hide" : ""].filter(Boolean).join(" ")}
       role="status"
-      aria-label="Loading Dua Dev"
+      aria-label="Loading ApexCRM"
     >
-      <svg viewBox="-6 0 302 170" className="site-loader-svg" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+      <svg viewBox="-6 0 342 170" className="site-loader-svg" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
         <g transform="translate(0 6)">
           {/* the wordmark: traced, then filled */}
-          <text x="0" y="75" fontFamily="Poppins, sans-serif" fontSize="60" fontWeight="800" className="sl-draw">
-            DUA
+          <text x="0" y="75" fontFamily="Poppins, sans-serif" fontSize="58" fontWeight="800" className="sl-draw">
+            APEX
           </text>
-          <text x="130" y="75" fontFamily="Poppins, sans-serif" fontSize="60" fontWeight="400" className="sl-draw sl-draw-2">
-            DEV
+          <text x="164" y="75" fontFamily="Poppins, sans-serif" fontSize="58" fontWeight="400" className="sl-draw sl-draw-2">
+            CRM
           </text>
-          <rect x="0" y="85" width="115" height="6" rx="3" fill={CYAN} className="sl-bar" />
+          <rect x="0" y="85" width="148" height="6" rx="3" fill={CYAN} className="sl-bar" />
 
           {/* the growth line, ending in the logo's accent square */}
           <path
-            d="M2 150 C40 150 60 136 90 140 S140 126 170 122 S225 118 250 108 S272 102 275 90"
+            d="M2 150 C45 150 70 136 105 140 S160 126 195 122 S255 118 285 108 S310 102 314 90"
             pathLength={1}
             className="sl-line"
           />
-          <circle cx="90" cy="140" r="3.4" fill={CYAN} className="sl-node" style={{ animationDelay: "1.05s" }} />
-          <circle cx="170" cy="122" r="3.4" fill={CYAN} className="sl-node" style={{ animationDelay: "1.25s" }} />
-          <circle cx="250" cy="108" r="3.4" fill={CYAN} className="sl-node" style={{ animationDelay: "1.45s" }} />
-          <rect x="260" y="55" width="20" height="20" fill={CYAN} className="sl-ping" />
-          <rect x="260" y="55" width="20" height="20" fill={CYAN} className="sl-sq" />
+          <circle cx="105" cy="140" r="3.4" fill={CYAN} className="sl-node" style={{ animationDelay: "1.05s" }} />
+          <circle cx="195" cy="122" r="3.4" fill={CYAN} className="sl-node" style={{ animationDelay: "1.25s" }} />
+          <circle cx="285" cy="108" r="3.4" fill={CYAN} className="sl-node" style={{ animationDelay: "1.45s" }} />
+          <rect x="304" y="55" width="20" height="20" fill={CYAN} className="sl-ping" />
+          <rect x="304" y="55" width="20" height="20" fill={CYAN} className="sl-sq" />
         </g>
       </svg>
       <p className="site-loader-caption">{caption}</p>

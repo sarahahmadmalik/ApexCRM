@@ -103,6 +103,54 @@ const BY_PAGE: Partial<Record<PageKey, AssistantContext>> = {
       { title: "Outstanding total", description: "Sent but unpaid", prompt: "What is our total outstanding amount across unpaid invoices?" },
     ],
   },
+  hiring: {
+    key: "hiring",
+    label: "Hiring & ATS",
+    headline: "Accelerate your talent pipeline",
+    subline: "Review open requisitions, candidate interview stages, and upcoming hiring decisions.",
+    prompts: [
+      { title: "Business briefing", description: "Risks, wins and next steps", prompt: "Give me a business briefing", action: "briefing" },
+      { title: "Team overview", description: "Current roster & roles", prompt: "Give me an overview of the team by employment type." },
+      { title: "Onboard new hire", description: "Create employee record", prompt: "Add an employee: ", fill: true },
+      { title: "Contracts ending soon", description: "Plan backfill needs", prompt: "Whose contract ends in the next 60 days?" },
+    ],
+  },
+  projects: {
+    key: "projects",
+    label: "Projects & Tasks",
+    headline: "Keep client delivery on track",
+    subline: "Monitor project budgets, sprint milestones, and client accounts.",
+    prompts: [
+      { title: "Business briefing", description: "Overall operational health", prompt: "Give me a business briefing", action: "briefing" },
+      { title: "Active clients", description: "Firms with active engagements", prompt: "Show me all client firms and their cities." },
+      { title: "Open offers", description: "Upcoming project pipeline", prompt: "Which offers are still waiting for an answer?" },
+      { title: "Draft an offer", description: "Scope a new client project", prompt: "Draft an offer for ", fill: true },
+    ],
+  },
+  time_leave: {
+    key: "time_leave",
+    label: "Time & Leave",
+    headline: "Manage team availability & utilization",
+    subline: "Stay ahead of PTO schedules, contract renewals, and billable capacity.",
+    prompts: [
+      { title: "Team roster", description: "Active staff & locations", prompt: "Give me an overview of the team by employment type." },
+      { title: "Contracts ending soon", description: "Next 60 days", prompt: "Whose contract ends in the next 60 days?" },
+      { title: "Business briefing", description: "Company-wide snapshot", prompt: "Give me a business briefing", action: "briefing" },
+      { title: "Add team member", description: "Add to employee roster", prompt: "Add an employee: ", fill: true },
+    ],
+  },
+  expenses: {
+    key: "expenses",
+    label: "Expenses & Payroll",
+    headline: "Financial clarity across operations",
+    subline: "Correlate company spend and payroll commitments with invoice cashflow.",
+    prompts: [
+      { title: "Overdue invoices", description: "Incoming cashflow watch", prompt: "Which invoices are overdue, and how much is outstanding?" },
+      { title: "Outstanding total", description: "Unpaid client invoices", prompt: "What is our total outstanding amount across unpaid invoices?" },
+      { title: "Salary commitments", description: "Team compensation overview", prompt: "Give me an overview of the team by employment type." },
+      { title: "Business briefing", description: "Executive financial summary", prompt: "Give me a business briefing", action: "briefing" },
+    ],
+  },
 };
 
 /** The assistant context for the page the user is on. Overview (home) and unlisted pages are generic. */

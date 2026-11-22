@@ -14,6 +14,14 @@ const TABLES = [
   "contracts",
   "firm_status_history",
   "dashboard_daily_snapshot",
+  "job_openings",
+  "job_candidates",
+  "projects",
+  "project_tasks",
+  "leave_requests",
+  "timesheets",
+  "expense_claims",
+  "payroll_runs",
 ];
 
 /**

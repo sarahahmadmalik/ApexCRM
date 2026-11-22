@@ -76,7 +76,7 @@ export function AiPageButton() {
     <button
       type="button"
       onClick={() => setOpen(!open)}
-      aria-label="Ask the Dua Dev assistant"
+      aria-label="Ask the ApexCRM assistant"
       aria-expanded={open}
       className="ai-pill ai-anim group relative inline-flex h-10 cursor-pointer rounded-full p-[1.5px] shadow-sm transition-transform duration-200 hover:scale-[1.04] active:scale-95"
     >
@@ -103,8 +103,8 @@ export function FloatingAssistantButton() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        aria-label="Open Dua Dev assistant"
-        title="Dua Dev assistant"
+        aria-label="Open ApexCRM assistant"
+        title="ApexCRM assistant"
         className="block cursor-pointer rounded-2xl shadow-xl shadow-navy-900/30 transition-transform duration-200 hover:-translate-y-0.5 hover:scale-105 active:scale-95"
       >
         <AiOrb size={56} />

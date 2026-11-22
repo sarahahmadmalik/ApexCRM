@@ -36,8 +36,8 @@ const MUTED = rgb(0.39, 0.45, 0.55);
 const RULE = rgb(0.886, 0.91, 0.941);
 const ZEBRA = rgb(0.972, 0.98, 0.988);
 
-const COMPANY = "Dua Dev UG (haftungsbeschränkt)";
-const FOOTER = "Dua Dev UG (haftungsbeschränkt) · dua-dev.com";
+const COMPANY = "ApexOps Technologies GmbH";
+const FOOTER = "ApexOps Technologies GmbH · apexcrm.io";
 
 // WinAnsi (what the built-in Helvetica can encode) = Latin-1 + these extras.
 const WIN_ANSI_EXTRA = "€‚ƒ„…†‡ˆ‰Š‹ŒŽ‘’“”•–—˜™š›œžŸ";
@@ -107,7 +107,7 @@ export async function renderPdf(spec: PdfSpec): Promise<Buffer> {
   drawChrome();
 
   // Letterhead
-  text("Dua Dev", MARGIN, y - 4, 20, bold, INK);
+  text("ApexCRM", MARGIN, y - 4, 20, bold, INK);
   text(COMPANY, MARGIN, y - 20, 8.5, regular, MUTED);
   rightText(spec.title.toUpperCase(), A4[0] - MARGIN, y - 4, 18, bold, BRAND);
   y -= 50;

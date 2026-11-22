@@ -158,7 +158,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
 
   return (
     <div>
-      <PageHeader title="Settings" description="Your account, appearance and security on the Dua Dev internal tool." />
+      <PageHeader title="Settings" description="Your account, appearance and security on ApexCRM." />
       <SettingsTabs tabs={tabs} initialTab={tab} />
     </div>
   );
