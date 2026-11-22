@@ -114,19 +114,14 @@ export function Sidebar({
             isCompressed ? "justify-center" : "justify-between"
           )}
         >
-          <div className={cn("flex flex-col gap-0.5", isCompressed ? "w-full items-center" : "items-start")}>
+          <div className={cn("flex items-center", isCompressed ? "w-full justify-center" : "justify-start")}>
             <Logo
               dark
               compact={isCompressed}
               className={cn(
-                isCompressed ? cn("h-12 w-auto transition-opacity duration-150", logoHovered && "opacity-0") : "h-12 w-auto"
+                isCompressed ? cn("h-8 w-auto transition-opacity duration-150", logoHovered && "opacity-0") : "h-8 w-auto"
               )}
             />
-            {!isCompressed && (
-              <span className="font-mono-brand text-[9px] font-semibold tracking-widest text-brand-400/70 uppercase whitespace-nowrap">
-                Enterprise Suite
-              </span>
-            )}
           </div>
 
           {/* Expanded: chevron sits beside the logo, always visible.

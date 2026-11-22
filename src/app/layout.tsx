@@ -17,8 +17,16 @@ import "./globals.css";
 import "./dino.css";
 
 export const metadata: Metadata = {
-  title: "ApexCRM · Enterprise CRM & Operations Suite",
-  description: "ApexCRM unified customer relationship, talent, project delivery, and financial operations platform",
+  title: {
+    default: "Apex · CRM & Operations Platform",
+    template: "%s · Apex",
+  },
+  description: "Apex unified customer relationship, talent acquisition, project delivery, and financial operations platform.",
+  applicationName: "Apex",
+  icons: {
+    icon: [{ url: "/icon", type: "image/png", sizes: "64x64" }],
+    apple: [{ url: "/apple-icon", type: "image/png", sizes: "180x180" }],
+  },
 };
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {

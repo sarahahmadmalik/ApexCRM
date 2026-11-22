@@ -77,32 +77,28 @@ export function SiteLoader({ showcase = false, caption = "Loading your workspace
       role="status"
       aria-label="Loading ApexCRM"
     >
-      <svg viewBox="-6 0 342 150" className="site-loader-svg" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
-        <g transform="translate(8 14)">
-          {/* Hexagonal Prism Emblem */}
+      <svg viewBox="0 0 185 60" className="site-loader-svg" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+        <g transform="translate(18 6)">
           <path
-            d="M36 4 L64 20 V52 L36 68 L8 52 V20 Z"
-            stroke={CYAN}
-            strokeWidth="2.5"
-            fill="rgba(6,182,212,0.12)"
-            className="sl-line"
-            pathLength={1}
+            d="M24 6 L8 40 H17.5 L24 25.5 L30.5 40 H40 L24 6 Z"
+            stroke="#ffffff"
+            strokeWidth="1.5"
+            fill="#ffffff"
+            className="sl-draw"
           />
-          <path d="M36 14 L16 52 H31 L36 34 Z" fill="#22d3ee" className="sl-sq" />
-          <path d="M36 14 L56 52 H41 L36 34 Z" fill={CYAN} className="sl-sq" />
-          <circle cx="36" cy="48" r="4.2" fill="#ffffff" className="sl-node" style={{ animationDelay: "0.9s" }} />
-
-          {/* "Apex" Logotype + "CRM" Pill Badge */}
-          <text x="82" y="55" fontFamily="Poppins, sans-serif" fontSize="44" fontWeight="700" className="sl-draw">
-            Apex
+          <path d="M24 25.5 L19.5 35.5 H28.5 L24 25.5 Z" fill={CYAN} className="sl-sq" />
+          <text
+            x="52"
+            y="35"
+            fontFamily="Poppins, sans-serif"
+            fontSize="32"
+            fontWeight="600"
+            letterSpacing="-0.8"
+            className="sl-draw sl-draw-2"
+          >
+            apex
           </text>
-          <g transform="translate(206, 22)">
-            <rect x="0" y="0" width="98" height="38" rx="11" fill="rgba(6,182,212,0.18)" stroke={CYAN} strokeWidth="2" className="sl-bar" />
-            <circle cx="17" cy="19" r="4" fill={CYAN} className="sl-node" style={{ animationDelay: "1.1s" }} />
-            <text x="30" y="26" fontFamily="Poppins, sans-serif" fontSize="21" fontWeight="800" letterSpacing="1.5" className="sl-draw sl-draw-2">
-              CRM
-            </text>
-          </g>
+          <circle cx="138" cy="31" r="3.5" fill={CYAN} className="sl-node" style={{ animationDelay: "1.1s" }} />
         </g>
       </svg>
       <p className="site-loader-caption">{caption}</p>

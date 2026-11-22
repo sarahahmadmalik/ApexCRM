@@ -28,11 +28,8 @@ export function AuthShell({ children }: { children: React.ReactNode }) {
           }}
         />
 
-        <div className="relative flex flex-col items-start gap-1.5">
-          <Logo dark className="h-16 w-auto xl:h-20" />
-          <span className="font-mono-brand text-[10px] font-semibold tracking-widest text-brand-400/70 uppercase">
-            Enterprise CRM &amp; Operations Suite
-          </span>
+        <div className="relative flex items-center">
+          <Logo dark className="h-10 w-auto xl:h-11" />
         </div>
 
         <div className="relative max-w-md">
@@ -62,8 +59,8 @@ export function AuthShell({ children }: { children: React.ReactNode }) {
         <div className="flex items-center justify-between px-6 pt-6 sm:px-10">
           {/* Logo shows here only when the brand panel is hidden */}
           <div className="lg:invisible">
-            <Logo className="h-12 w-auto dark:hidden" />
-            <Logo dark className="hidden h-12 w-auto dark:block" />
+            <Logo className="h-8 w-auto dark:hidden" />
+            <Logo dark className="hidden h-8 w-auto dark:block" />
           </div>
           <ThemeToggle />
         </div>
