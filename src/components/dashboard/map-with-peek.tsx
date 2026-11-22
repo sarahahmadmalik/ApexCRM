@@ -51,7 +51,10 @@ export function MapWithPeek({
 
   const setSelected = setPicked;
   const selectedKey = selected ? `${selected.state}|${selected.city}` : null;
-  const selectedFirms = selectedKey ? (firmsByCity[selectedKey] ?? []) : [];
+  const selectedFirms = useMemo(
+    () => (selectedKey ? (firmsByCity[selectedKey] ?? []) : []),
+    [selectedKey, firmsByCity]
+  );
   const selectedStatus = selectedKey ? (cityStatuses[selectedKey] ?? "not_started") : null;
 
   const selectedCounts = useMemo(() => {

@@ -75,6 +75,6 @@ export async function updateMyLocation(country: string) {
   const { error } = await supabase.from("employees").update({ country }).eq("id", employee.id);
   if (error) throw new Error(error.message);
 
-  revalidatePath("/profile");
+  revalidatePath("/settings");
   revalidatePath("/employees");
 }

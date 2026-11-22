@@ -5,6 +5,7 @@ import { CountryPills } from "@/components/dashboard/country-pills";
 import { CountryBenchmark } from "@/components/dashboard/country-benchmark";
 import { ActivityFeed } from "@/components/dashboard/activity-feed";
 import { PageHeader } from "@/components/ui/page-header";
+import { ErrorNotice } from "@/components/ui/error-notice";
 import { COUNTRY_NAMES, citiesForCountry } from "@/lib/data/geo";
 import { buildTrend, pickTrendBaseline, sparklinePath } from "@/lib/data/trends";
 import { TrendingUp, TrendingDown, Minus } from "lucide-react";
@@ -91,6 +92,7 @@ export default async function OverviewPage({
   });
 
   const activityUnavailable = Boolean(activity.error);
+  const pageError = cityRows.error ?? allFirmsForCountry.error;
 
   const totalContacted = inProgress + sent + responded + negotiation + clients;
   const inProgressRate = totalContacted > 0 ? Math.round((inProgress / totalContacted) * 100) : 0;
@@ -135,6 +137,8 @@ export default async function OverviewPage({
   return (
     <div className="space-y-6">
       <PageHeader title="Overview" description="Monitor firm engagement and geographic expansion across the European campaign" />
+
+      {pageError && <ErrorNotice message={pageError.message} />}
 
       {/* KPI Top Strip */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">

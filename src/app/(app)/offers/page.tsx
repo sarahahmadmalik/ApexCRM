@@ -16,13 +16,14 @@ export default async function OffersPage() {
   await requirePageAccess("offers");
   const supabase = await createClient();
 
-  const [{ data: offers, error }, { data: firms }] = await Promise.all([
+  const [{ data: offers, error }, { data: firms, error: firmsError }] = await Promise.all([
     supabase
       .from("angebots")
       .select("*, firms(id, name, city, country)")
       .order("created_at", { ascending: false }),
     supabase.from("firms").select("*").order("name"),
   ]);
+  const queryError = error ?? firmsError;
 
   const allOffers = offers ?? [];
   const countBy = (status: AngebotStatus) => allOffers.filter((o) => o.status === status).length;
@@ -36,7 +37,7 @@ export default async function OffersPage() {
         actions={<AddOfferButton firms={firms ?? []} />}
       />
 
-      {!error && (
+      {!queryError && (
         <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <StatCard label="Total offers" value={allOffers.length} icon={<FileSpreadsheet className="h-5 w-5" />} tone="slate" />
           <StatCard label="Sent, awaiting reply" value={countBy("sent")} icon={<Send className="h-5 w-5" />} tone="indigo" />
@@ -51,8 +52,8 @@ export default async function OffersPage() {
         </div>
       )}
 
-      {error ? (
-        <ErrorNotice message={error.message} />
+      {queryError ? (
+        <ErrorNotice message={queryError.message} />
       ) : (
         <OffersTable offers={allOffers} firms={firms ?? []} />
       )}

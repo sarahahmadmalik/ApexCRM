@@ -70,7 +70,7 @@ export function ThemeProvider({
   /** The account's saved preference, from the server — seeds localStorage on
    * a device that has never stored a choice locally. */
   initialTheme?: Theme | null;
-  onPersist?: (theme: Theme) => void;
+  onPersist?: (theme: Theme) => unknown;
 }) {
   const snapshot = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
   const [theme, resolvedTheme] = snapshot.split(":") as [Theme, "light" | "dark"];
@@ -107,7 +107,9 @@ export function ThemeProvider({
       }
       document.documentElement.classList.toggle("dark", resolve(next) === "dark");
       notify();
-      onPersist?.(next);
+      Promise.resolve(onPersist?.(next)).catch(() => {
+        // Best-effort persistence: local theme toggle still succeeds if offline or unauthenticated.
+      });
     },
     [onPersist]
   );

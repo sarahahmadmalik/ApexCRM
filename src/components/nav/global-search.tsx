@@ -22,6 +22,7 @@ export function GlobalSearch() {
   const [results, setResults] = useState<GlobalSearchResult[]>([]);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const isSearchable = query.trim().length >= 2;
@@ -31,11 +32,19 @@ export function GlobalSearch() {
     let cancelled = false;
     const timeout = setTimeout(() => {
       setLoading(true);
-      globalSearch(query).then((r) => {
-        if (cancelled) return;
-        setResults(r);
-        setLoading(false);
-      });
+      setSearchError(null);
+      globalSearch(query)
+        .then((r) => {
+          if (cancelled) return;
+          setResults(r);
+          setLoading(false);
+        })
+        .catch((err) => {
+          if (cancelled) return;
+          setResults([]);
+          setSearchError(err instanceof Error ? err.message : "Search failed. Please try again.");
+          setLoading(false);
+        });
     }, 200);
     return () => {
       cancelled = true;
@@ -78,6 +87,8 @@ export function GlobalSearch() {
               <Loader2 className="h-4 w-4 animate-spin" />
               Searching...
             </div>
+          ) : searchError ? (
+            <p className="px-4 py-6 text-center text-sm text-red-600 dark:text-red-400">{searchError}</p>
           ) : results.length === 0 ? (
             <p className="py-6 text-center text-sm text-gray-400 dark:text-gray-500">No matches for &ldquo;{query}&rdquo;</p>
           ) : (

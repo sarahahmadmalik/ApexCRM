@@ -13,10 +13,11 @@ type StoredContractData = { end_date?: string | null };
 export default async function ContractsPage() {
   await requirePageAccess("contracts");
   const supabase = await createClient();
-  const [{ data: contracts, error }, { data: employees }] = await Promise.all([
+  const [{ data: contracts, error }, { data: employees, error: employeesError }] = await Promise.all([
     supabase.from("contracts").select("*, employees(id, full_name, email, country, employment_type)").order("created_at", { ascending: false }),
     supabase.from("employees").select("*").order("full_name"),
   ]);
+  const queryError = error ?? employeesError;
 
   const allContracts = contracts ?? [];
   const finalCount = allContracts.filter((c) => c.status === "final").length;
@@ -40,7 +41,7 @@ export default async function ContractsPage() {
         actions={<AddContractButton employees={employees ?? []} />}
       />
 
-      {!error && (
+      {!queryError && (
         <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <StatCard label="Total contracts" value={allContracts.length} icon={<FileSignature className="h-5 w-5" />} tone="slate" />
           <StatCard label="Document ready" value={finalCount} icon={<CheckCircle2 className="h-5 w-5" />} tone="emerald" />
@@ -49,7 +50,7 @@ export default async function ContractsPage() {
         </div>
       )}
 
-      {error ? <ErrorNotice message={error.message} /> : <ContractsTable contracts={allContracts} />}
+      {queryError ? <ErrorNotice message={queryError.message} /> : <ContractsTable contracts={allContracts} />}
     </div>
   );
 }

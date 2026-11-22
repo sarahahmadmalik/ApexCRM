@@ -32,31 +32,35 @@ export default async function FirmsPage({
   const ascending = params.dir === "asc";
 
   let query = supabase.from("firms").select("*").order(sortColumn, { ascending });
-  const countQuery = supabase.from("firms").select("*", { count: "exact", head: true });
+  let countQuery = supabase.from("firms").select("*", { count: "exact", head: true });
 
   if (params.q) {
     query = query.ilike("name", `%${params.q}%`);
-    countQuery.ilike("name", `%${params.q}%`);
+    countQuery = countQuery.ilike("name", `%${params.q}%`);
   }
   if (params.country) {
     query = query.in("country", params.country.split(","));
-    countQuery.in("country", params.country.split(","));
+    countQuery = countQuery.in("country", params.country.split(","));
   }
   if (params.state) {
     query = query.in("state", params.state.split(","));
-    countQuery.in("state", params.state.split(","));
+    countQuery = countQuery.in("state", params.state.split(","));
   }
   if (params.city) {
     query = query.in("city", params.city.split(","));
-    countQuery.in("city", params.city.split(","));
+    countQuery = countQuery.in("city", params.city.split(","));
   }
   if (params.status) {
     const statuses = params.status.split(",") as FirmStatus[];
     query = query.in("status", statuses);
-    countQuery.in("status", statuses);
+    countQuery = countQuery.in("status", statuses);
   }
 
-  const [{ data: firms, error }, { count }] = await Promise.all([query.range(from, from + PAGE_SIZE - 1), countQuery]);
+  const [{ data: firms, error }, { count, error: countError }] = await Promise.all([
+    query.range(from, from + PAGE_SIZE - 1),
+    countQuery,
+  ]);
+  const queryError = error ?? countError;
 
   return (
     <div>
@@ -72,8 +76,8 @@ export default async function FirmsPage({
         }
       />
 
-      {error ? (
-        <ErrorNotice message={error.message} />
+      {queryError ? (
+        <ErrorNotice message={queryError.message} />
       ) : (
         <FirmsTable
           firms={firms ?? []}

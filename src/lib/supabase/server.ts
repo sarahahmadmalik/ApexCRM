@@ -40,31 +40,36 @@ export async function createClient() {
  * request share a single lookup.
  */
 export const getCurrentAppUser = cache(async () => {
-  const supabase = await createClient();
-  // The proxy already validated the session with the auth server on this request, so here the token
-  // only needs its signature checked locally (getClaims) instead of paying a second network round trip.
-  const { data: claimsData } = await supabase.auth.getClaims();
-  const claims = claimsData?.claims;
-  if (!claims?.sub) return null;
-  const user = { id: claims.sub, email: typeof claims.email === "string" ? claims.email : undefined };
+  try {
+    const supabase = await createClient();
+    // The proxy already validated the session with the auth server on this request, so here the token
+    // only needs its signature checked locally (getClaims) instead of paying a second network round trip.
+    const { data: claimsData, error: claimsError } = await supabase.auth.getClaims();
+    if (claimsError) return null;
+    const claims = claimsData?.claims;
+    if (!claims?.sub) return null;
+    const user = { id: claims.sub, email: typeof claims.email === "string" ? claims.email : undefined };
 
-  // Independent lookups: run them side by side (one round trip instead of two).
-  const [{ data: appUser }, { data: permissionRows }] = await Promise.all([
-    supabase.from("app_users").select("*, workspaces(name)").eq("id", user.id).maybeSingle(),
-    supabase.from("user_permissions").select("page, access").eq("user_id", user.id),
-  ]);
+    // Independent lookups: run them side by side (one round trip instead of two).
+    const [{ data: appUser, error: userError }, { data: permissionRows }] = await Promise.all([
+      supabase.from("app_users").select("*, workspaces(name)").eq("id", user.id).maybeSingle(),
+      supabase.from("user_permissions").select("page, access").eq("user_id", user.id),
+    ]);
 
-  if (!appUser || !appUser.is_active) return null;
+    if (userError || !appUser || !appUser.is_active) return null;
 
-  const isAdmin = appUser.account_role === "admin";
-  const stored = isAdmin ? noPermissions() : permissionsFromRows(permissionRows ?? []);
+    const isAdmin = appUser.account_role === "admin";
+    const stored = isAdmin ? noPermissions() : permissionsFromRows(permissionRows ?? []);
 
-  const { workspaces, ...row } = appUser as typeof appUser & { workspaces: { name: string } | null };
-  return {
-    ...row,
-    email: user.email,
-    isAdmin,
-    workspaceName: workspaces?.name ?? "Workspace",
-    permissions: effectivePermissions(row.account_role, stored),
-  };
+    const { workspaces, ...row } = appUser as typeof appUser & { workspaces: { name: string } | null };
+    return {
+      ...row,
+      email: user.email,
+      isAdmin,
+      workspaceName: workspaces?.name ?? "Workspace",
+      permissions: effectivePermissions(row.account_role, stored),
+    };
+  } catch {
+    return null;
+  }
 });

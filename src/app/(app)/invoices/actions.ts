@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { calcTotals, formatCurrency, formatDate } from "@/lib/utils";
 import { renderDocxTemplate } from "@/lib/documents/generate";
 import { convertDocxToPdf } from "@/lib/documents/convert";
+import { renderPdf } from "@/lib/documents/pdf";
 import { storeAndSign, slug, type DocumentFormat } from "@/lib/documents/storage";
 import type { InvoiceStatus, LineItem } from "@/lib/types/database";
 import { assertAccess } from "@/lib/auth/guards";
@@ -96,8 +97,13 @@ export async function downloadInvoiceDocument(id: string, format: DocumentFormat
     .single();
   if (error || !invoice) throw new Error(error?.message ?? "Invoice not found");
 
-  const firm = (invoice as unknown as { firms: { name: string; contact_name: string | null; city: string; country: string } }).firms;
-  const salutation = firm.contact_name ? `Sehr geehrte(r) ${firm.contact_name},` : "Sehr geehrte Damen und Herren,";
+  const firm = (
+    invoice as unknown as { firms: { name: string; contact_name: string | null; city: string; country: string } | null }
+  ).firms;
+  const firmName = firm?.name ?? "Client";
+  const contactName = firm?.contact_name ?? null;
+  const postalCity = firm ? `${firm.city}, ${firm.country}` : "";
+  const salutation = contactName ? `Sehr geehrte(r) ${contactName},` : "Sehr geehrte Damen und Herren,";
   const customerNumber = invoice.firm_id.slice(0, 8).toUpperCase();
   const servicePeriod =
     invoice.service_period_start && invoice.service_period_end
@@ -111,27 +117,65 @@ export async function downloadInvoiceDocument(id: string, format: DocumentFormat
     total: formatCurrency(li.total),
   }));
 
-  const docx = renderDocxTemplate("rechnung-template.docx", {
-    salutation,
-    signer_name: SIGNER_NAME,
-    firm_name: firm.name,
-    firm_department: "",
-    contact_name: firm.contact_name ?? "",
-    firm_address_line: "",
-    firm_postal_city: `${firm.city}, ${firm.country}`,
-    invoice_number: invoice.invoice_number,
-    issue_date: formatDate(invoice.issue_date),
-    customer_number: customerNumber,
-    service_period: servicePeriod,
-    vat_rate: invoice.vat_rate,
-    net_amount: formatCurrency(invoice.net_amount),
-    vat_amount: formatCurrency(invoice.vat_amount),
-    total_amount: formatCurrency(invoice.total_amount),
-    due_date: formatDate(invoice.due_date),
-    items,
-  });
-  // PDFs are the same filled Word template, converted — so both formats match it exactly.
-  const buffer = format === "docx" ? docx : await convertDocxToPdf(docx, "invoice.docx");
+  const buildFallbackPdf = () =>
+    renderPdf({
+      title: "Rechnung",
+      recipient: [firmName, ...(contactName ? [contactName] : []), ...(postalCity ? [postalCity] : [])],
+      meta: [
+        ["Rechnung Nr.", invoice.invoice_number],
+        ["Datum", formatDate(invoice.issue_date)],
+        ["Fällig bis", formatDate(invoice.due_date)],
+        ["Leistungszeitraum", servicePeriod],
+        ["Kunden-Nr.", customerNumber],
+      ],
+      intro: [salutation, "Für unsere erbrachten Leistungen erlauben wir uns, folgenden Betrag in Rechnung zu stellen:"],
+      items: {
+        labels: ["Pos.", "Beschreibung", "Menge", "Einzelpreis", "Gesamt"],
+        rows: items,
+      },
+      totals: [
+        { label: "Nettobetrag", value: formatCurrency(invoice.net_amount) },
+        { label: `USt. (${invoice.vat_rate}%)`, value: formatCurrency(invoice.vat_amount) },
+        { label: "Gesamtbetrag", value: formatCurrency(invoice.total_amount), strong: true },
+      ],
+      closing: ["Mit freundlichen Grüßen", SIGNER_NAME],
+    });
+
+  let buffer: Buffer;
+  try {
+    const docx = renderDocxTemplate("rechnung-template.docx", {
+      salutation,
+      signer_name: SIGNER_NAME,
+      firm_name: firmName,
+      firm_department: "",
+      contact_name: contactName ?? "",
+      firm_address_line: "",
+      firm_postal_city: postalCity,
+      invoice_number: invoice.invoice_number,
+      issue_date: formatDate(invoice.issue_date),
+      customer_number: customerNumber,
+      service_period: servicePeriod,
+      vat_rate: invoice.vat_rate,
+      net_amount: formatCurrency(invoice.net_amount),
+      vat_amount: formatCurrency(invoice.vat_amount),
+      total_amount: formatCurrency(invoice.total_amount),
+      due_date: formatDate(invoice.due_date),
+      items,
+    });
+    if (format === "docx") {
+      buffer = docx;
+    } else if (process.env.CLOUDCONVERT_API_KEY) {
+      buffer = await convertDocxToPdf(docx, "invoice.docx").catch(() => buildFallbackPdf());
+    } else {
+      buffer = await buildFallbackPdf();
+    }
+  } catch (err) {
+    if (format === "pdf") {
+      buffer = await buildFallbackPdf();
+    } else {
+      throw err;
+    }
+  }
 
   const filePath = `invoices/${invoice.invoice_number}.${format}`;
   const url = await storeAndSign(
@@ -139,7 +183,7 @@ export async function downloadInvoiceDocument(id: string, format: DocumentFormat
     filePath,
     buffer,
     format,
-    `Invoice-${invoice.invoice_number}-${slug(firm.name)}.${format}`
+    `Invoice-${invoice.invoice_number}-${slug(firmName)}.${format}`
   );
 
   if (format === "docx") {

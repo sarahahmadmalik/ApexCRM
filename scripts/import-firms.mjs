@@ -12,7 +12,7 @@
 // City matching uses the app's own city list (hand-curated + generated) and GeoNames (cities500, cached in
 // .cache/geonames) to recognise other spellings and typos ("Den Haag" = The Hague, "Köln" = Cologne,
 // "Utrech" = Utrecht) and to find the region of a town that isn't in the list yet.
-import { readFileSync, writeFileSync, existsSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { EXTRA_CITIES, GENERATED_COUNTRIES } from "../src/lib/data/geo-generated.ts";
@@ -307,7 +307,6 @@ import type { CompactCity } from "./geo-generated";
 `;
 writeFileSync(OUT_GEO, `${header}export const CUSTOM_CITIES: Record<string, Record<string, CompactCity[]>> = ${JSON.stringify(added, null, 1)};\n`);
 
-const count = (key) => firms.reduce((a, f) => ({ ...a, [f[key]]: (a[key ? f[key] : ""] ?? 0) + 1 }), {});
 const tally = (key) => Object.entries(firms.reduce((a, f) => ((a[f[key]] = (a[f[key]] ?? 0) + 1), a), {})).map(([k, v]) => `${k}: ${v}`).join(", ");
 console.log(`firms: ${firms.length} | skipped: ${skipped.length}`);
 for (const s of skipped) console.log(`  skipped ${s.src} S.No ${s.sno}: ${s.reason}`);

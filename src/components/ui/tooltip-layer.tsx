@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 
 /**
@@ -39,14 +39,18 @@ function tooltipHost(start: EventTarget | null): { el: Element; text: string } |
   return null;
 }
 
+const emptySubscribe = () => () => {};
+
 export function TooltipLayer() {
   const [tip, setTip] = useState<Tip | null>(null);
   const host = useRef<Element | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const bubbleRef = useRef<HTMLDivElement>(null);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => setMounted(true), []);
+  const [bubbleWidth, setBubbleWidth] = useState(0);
+  const mounted = useSyncExternalStore(
+    emptySubscribe,
+    () => true,
+    () => false
+  );
 
   useEffect(() => {
     function hide() {
@@ -101,21 +105,23 @@ export function TooltipLayer() {
     };
   }, []);
 
-  // Keep the bubble inside the viewport horizontally once its width is known.
-  const [shift, setShift] = useState(0);
-  useEffect(() => {
-    if (!tip || !bubbleRef.current) return;
-    const w = bubbleRef.current.offsetWidth;
-    const left = tip.x - w / 2;
-    const margin = 8;
-    setShift(Math.max(margin - left, Math.min(0, window.innerWidth - margin - (left + w))));
-  }, [tip]);
-
   if (!mounted || !tip) return null;
+
+  const left = tip.x - bubbleWidth / 2;
+  const margin = 8;
+  const shift =
+    bubbleWidth > 0 && typeof window !== "undefined"
+      ? Math.max(margin - left, Math.min(0, window.innerWidth - margin - (left + bubbleWidth)))
+      : 0;
 
   return createPortal(
     <div
-      ref={bubbleRef}
+      ref={(node) => {
+        if (node) {
+          const w = node.offsetWidth;
+          if (w !== bubbleWidth) setBubbleWidth(w);
+        }
+      }}
       role="tooltip"
       className="tooltip-pop pointer-events-none fixed z-[300] max-w-[280px] rounded-lg bg-navy-950 px-2.5 py-1.5 text-xs leading-snug font-medium text-white shadow-lg ring-1 ring-white/10"
       style={{

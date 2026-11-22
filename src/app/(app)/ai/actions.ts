@@ -10,6 +10,7 @@ import { setCityOverride } from "@/app/(app)/cities/actions";
 import { createAngebot, updateAngebotStatus } from "@/app/(app)/offers/actions";
 import { updateInvoiceStatus } from "@/app/(app)/invoices/actions";
 import { hasAccess } from "@/lib/permissions";
+import { revalidatePath } from "next/cache";
 
 export type BriefingInsight = {
   title: string;
@@ -59,6 +60,7 @@ export async function updateAssistantPlacement(placement: AssistantPlacement) {
         : error.message
     );
   }
+  revalidatePath("/", "layout");
 }
 
 /** Generates the AI briefing from the live data the current user is allowed to see. */

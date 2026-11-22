@@ -26,11 +26,12 @@ export default async function InvoicesPage({
     .order("created_at", { ascending: false });
   if (firm) query = query.eq("firm_id", firm);
 
-  const [{ data: invoices, error }, { data: firms }, { data: angebots }] = await Promise.all([
+  const [{ data: invoices, error }, { data: firms, error: firmsError }, { data: angebots, error: angebotsError }] = await Promise.all([
     query,
     supabase.from("firms").select("*").order("name"),
     supabase.from("angebots").select("*").order("created_at", { ascending: false }),
   ]);
+  const queryError = error ?? firmsError ?? angebotsError;
 
   const allInvoices = invoices ?? [];
   const paidCount = allInvoices.filter((i) => i.status === "paid").length;
@@ -47,7 +48,7 @@ export default async function InvoicesPage({
         actions={<AddInvoiceButton firms={firms ?? []} angebots={angebots ?? []} />}
       />
 
-      {!error && (
+      {!queryError && (
         <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <StatCard label="Total invoices" value={allInvoices.length} icon={<Receipt className="h-5 w-5" />} tone="slate" />
           <StatCard label="Paid" value={paidCount} icon={<CheckCircle2 className="h-5 w-5" />} tone="emerald" />
@@ -62,7 +63,7 @@ export default async function InvoicesPage({
         </div>
       )}
 
-      {error ? <ErrorNotice message={error.message} /> : <InvoicesTable invoices={allInvoices} offerNumbers={Object.fromEntries((angebots ?? []).map((a) => [a.id, a.angebot_number]))} />}
+      {queryError ? <ErrorNotice message={queryError.message} /> : <InvoicesTable invoices={allInvoices} offerNumbers={Object.fromEntries((angebots ?? []).map((a) => [a.id, a.angebot_number]))} />}
     </div>
   );
 }

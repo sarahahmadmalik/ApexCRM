@@ -79,9 +79,13 @@ export function ImportFirmsDialog({ open, onClose }: { open: boolean; onClose: (
   }
 
   async function handleFile(file: File) {
-    const content = await file.text();
-    setText(content);
-    setResult(null);
+    try {
+      const content = await file.text();
+      setText(content);
+      setResult(null);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Couldn't read the selected CSV file.");
+    }
   }
 
   async function handleImport() {
