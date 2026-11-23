@@ -51,7 +51,7 @@ begin
       v_user_id,
       'Sara Malik',
       'CTO',
-      case when exists (select 1 from app_users where account_role = 'admin') then 'member' else 'admin' end
+      case when exists (select 1 from app_users where account_role = 'admin') then 'manager' else 'admin' end
     );
 
     raise notice 'Created % (CTO, workspace admin) — sign in at /login with the password from this script.', v_email;

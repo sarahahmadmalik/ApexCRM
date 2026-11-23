@@ -12,7 +12,8 @@ create extension if not exists "pgcrypto";
 -- ENUMS
 -- ============================================================================
 
-create type firm_status as enum (
+do  begin
+  create type firm_status as enum (
   'not_started',   -- no outreach yet
   'in_progress',   -- currently sending / working on this firm
   'sent',          -- proposal email sent
@@ -20,20 +21,34 @@ create type firm_status as enum (
   'interested',    -- firm is close to becoming a client (negotiating)
   'client'         -- firm has become a client
 );
+exception when duplicate_object then null;
+end ;
 
-create type city_manual_status as enum ('not_started', 'in_progress', 'completed');
+do  begin
+  create type city_manual_status as enum ('not_started', 'in_progress', 'completed');
+exception when duplicate_object then null;
+end ;
 
-create type angebot_status as enum ('draft', 'sent', 'signed', 'rejected', 'expired');
+do  begin
+  create type angebot_status as enum ('draft', 'sent', 'signed', 'rejected', 'expired');
+exception when duplicate_object then null;
+end ;
 
-create type invoice_status as enum ('draft', 'sent', 'paid', 'overdue', 'cancelled');
+do  begin
+  create type invoice_status as enum ('draft', 'sent', 'paid', 'overdue', 'cancelled');
+exception when duplicate_object then null;
+end ;
 
-create type contract_status as enum ('draft', 'final');
+do  begin
+  create type contract_status as enum ('draft', 'final');
+exception when duplicate_object then null;
+end ;
 
 -- ============================================================================
 -- APP USERS (allowlist â€” only CEO / CTO get access to this tool)
 -- ============================================================================
 
-create table app_users (
+create table if not exists app_users (
   id uuid primary key references auth.users (id) on delete cascade,
   full_name text not null,
   role text not null check (role in ('ceo', 'cto')),
@@ -53,7 +68,7 @@ $$;
 -- FIRMS (outreach tracking)
 -- ============================================================================
 
-create table firms (
+create table if not exists firms (
   id uuid primary key default gen_random_uuid(),
   name text not null,
   country text not null,
@@ -69,10 +84,10 @@ create table firms (
   updated_at timestamptz not null default now()
 );
 
-create index firms_country_idx on firms (country);
-create index firms_city_idx on firms (city);
-create index firms_status_idx on firms (status);
-create index firms_name_trgm_idx on firms using gin (to_tsvector('simple', name));
+create index if not exists firms_country_idx on firms (country);
+create index if not exists firms_city_idx on firms (city);
+create index if not exists firms_status_idx on firms (status);
+create index if not exists firms_name_trgm_idx on firms using gin (to_tsvector('simple', name));
 
 create or replace function set_updated_at()
 returns trigger language plpgsql as $$
@@ -90,7 +105,7 @@ create trigger firms_set_updated_at
 -- CITY COMPLETION (manual override / notes on top of computed status)
 -- ============================================================================
 
-create table city_completion (
+create table if not exists city_completion (
   id uuid primary key default gen_random_uuid(),
   country text not null,
   state text not null,
@@ -143,7 +158,7 @@ full outer join city_status_computed s
 -- EMPLOYEES
 -- ============================================================================
 
-create table employees (
+create table if not exists employees (
   id uuid primary key default gen_random_uuid(),
   full_name text not null,
   country text,
@@ -159,7 +174,7 @@ create trigger employees_set_updated_at
   before update on employees
   for each row execute function set_updated_at();
 
-create table contracts (
+create table if not exists contracts (
   id uuid primary key default gen_random_uuid(),
   employee_id uuid not null references employees (id) on delete cascade,
   status contract_status not null default 'draft',
@@ -190,7 +205,7 @@ create trigger contracts_sync_employee
 -- AUTO-NUMBERING (atomic, never repeats)
 -- ============================================================================
 
-create table counters (
+create table if not exists counters (
   key text primary key,
   value integer not null default 0
 );
@@ -244,7 +259,7 @@ $$;
 -- ANGEBOTS (offers / quotes)
 -- ============================================================================
 
-create table angebots (
+create table if not exists angebots (
   id uuid primary key default gen_random_uuid(),
   angebot_number text not null unique default next_angebot_number(),
   firm_id uuid not null references firms (id),
@@ -285,7 +300,7 @@ create trigger angebots_promote_firm
 -- INVOICES (Rechnungen)
 -- ============================================================================
 
-create table invoices (
+create table if not exists invoices (
   id uuid primary key default gen_random_uuid(),
   invoice_number text not null unique default next_invoice_number(),
   firm_id uuid not null references firms (id),
@@ -397,7 +412,7 @@ create policy "app_users can delete documents"
 -- FIRM STATUS HISTORY (audit trail â€” who changed a firm's status and when)
 -- ============================================================================
 
-create table firm_status_history (
+create table if not exists firm_status_history (
   id uuid primary key default gen_random_uuid(),
   firm_id uuid not null references firms (id) on delete cascade,
   old_status firm_status,
@@ -406,8 +421,8 @@ create table firm_status_history (
   changed_at timestamptz not null default now()
 );
 
-create index firm_status_history_firm_idx on firm_status_history (firm_id);
-create index firm_status_history_changed_at_idx on firm_status_history (changed_at desc);
+create index if not exists firm_status_history_firm_idx on firm_status_history (firm_id);
+create index if not exists firm_status_history_changed_at_idx on firm_status_history (changed_at desc);
 
 create or replace function log_firm_status_change()
 returns trigger language plpgsql security definer as $$
@@ -450,7 +465,7 @@ order by h.changed_at desc;
 -- DASHBOARD DAILY SNAPSHOT (for "vs last month" trend deltas on stat cards)
 -- ============================================================================
 
-create table dashboard_daily_snapshot (
+create table if not exists dashboard_daily_snapshot (
   snapshot_date date primary key,
   total_firms int not null,
   sent_count int not null,
@@ -589,7 +604,10 @@ $$;
 -- Employment type on the employee roster (full time / part time / contract).
 -- Run after 0003_rename_interested_to_negotiation.sql.
 
-create type employment_type as enum ('full_time', 'part_time', 'contract');
+do  begin
+  create type employment_type as enum ('full_time', 'part_time', 'contract');
+exception when duplicate_object then null;
+end ;
 
 alter table employees
   add column employment_type employment_type not null default 'full_time';
@@ -627,7 +645,10 @@ alter table employees
 -- ---------------------------------------------------------------------------
 
 alter type angebot_status rename to angebot_status_old;
-create type angebot_status as enum ('draft', 'sent', 'accepted', 'rejected');
+do  begin
+  create type angebot_status as enum ('draft', 'sent', 'accepted', 'rejected');
+exception when duplicate_object then null;
+end ;
 
 alter table angebots alter column status drop default;
 alter table angebots
@@ -814,7 +835,7 @@ alter table app_users
 -- WORKSPACES
 -- ============================================================================
 
-create table workspaces (
+create table if not exists workspaces (
   id uuid primary key default gen_random_uuid(),
   name text not null check (char_length(btrim(name)) between 1 and 80),
   created_at timestamptz not null default now()
@@ -846,13 +867,13 @@ alter table app_users alter column workspace_id set not null;
 alter table app_users alter column workspace_id set default '00000000-0000-0000-0000-00000000d0a0';
 
 -- One admin per workspace is enough for now; the app never creates a second one.
-create unique index app_users_one_admin_per_workspace on app_users (workspace_id) where account_role = 'admin';
+create unique index if not exists app_users_one_admin_per_workspace on app_users (workspace_id) where account_role = 'admin';
 
 -- ============================================================================
 -- PAGE PERMISSIONS
 -- ============================================================================
 
-create table user_permissions (
+create table if not exists user_permissions (
   user_id uuid not null references app_users (id) on delete cascade,
   page text not null check (page in ('dashboard', 'firms', 'cities', 'employees', 'contracts', 'offers', 'invoices')),
   access text not null check (access in ('read', 'write')),

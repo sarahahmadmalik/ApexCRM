@@ -106,9 +106,22 @@ export async function renderPdf(spec: PdfSpec): Promise<Buffer> {
 
   drawChrome();
 
-  // Letterhead
-  text("ApexCRM", MARGIN, y - 4, 20, bold, INK);
-  text(COMPANY, MARGIN, y - 20, 8.5, regular, MUTED);
+  // Letterhead with Apex CRM vector mark
+  page.drawSvgPath("M 14 0 L 0 26 H 7.5 L 14 13.5 L 20.5 26 H 28 L 14 0 Z", {
+    x: MARGIN,
+    y: y + 10,
+    color: INK,
+  });
+  page.drawSvgPath("M 14 13.5 L 10 21.5 H 18 L 14 13.5 Z", {
+    x: MARGIN,
+    y: y + 10,
+    color: BRAND,
+  });
+  const logoTextX = MARGIN + 35;
+  text("apex", logoTextX, y - 5, 20, bold, INK);
+  const apexWidth = bold.widthOfTextAtSize("apex", 20);
+  text("CRM", logoTextX + apexWidth + 4, y - 5, 10, bold, BRAND);
+  text(COMPANY, MARGIN, y - 24, 8.5, regular, MUTED);
   rightText(spec.title.toUpperCase(), A4[0] - MARGIN, y - 4, 18, bold, BRAND);
   y -= 50;
   page.drawLine({ start: { x: MARGIN, y }, end: { x: A4[0] - MARGIN, y }, thickness: 1, color: RULE });

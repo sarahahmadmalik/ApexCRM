@@ -1,6 +1,6 @@
 import { Briefcase, CalendarRange, Wallet, FileSignature, UserX } from "lucide-react";
 import { Card, CardHeader } from "@/components/ui/card";
-import { DownloadMenu } from "@/components/ui/download-menu";
+import { ContractDownload } from "@/components/profile/contract-download";
 import { Badge } from "@/components/ui/badge";
 import { AppearanceCard } from "@/components/profile/appearance-card";
 import { ProfileAvatarCard } from "@/components/profile/avatar-uploader";
@@ -11,7 +11,6 @@ import { ChangePasswordCard } from "@/components/profile/change-password-card";
 import { LocationTile } from "@/components/profile/location-tile";
 import { getCurrentAppUser, createClient } from "@/lib/supabase/server";
 import { aiConfigured } from "@/lib/ai/openrouter";
-import { downloadContractDocument } from "@/app/(app)/employees/actions";
 import { EMPLOYMENT_TYPE_LABELS, formatDate, formatSalary } from "@/lib/utils";
 import { redirect } from "next/navigation";
 
@@ -113,11 +112,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
                   >
                     {latestContract.status === "final" ? "Document ready" : "Template pending"}
                   </Badge>
-                  <DownloadMenu
-                    variant="button"
-                    label="View contract"
-                    onDownload={(format) => downloadContractDocument(latestContract.id, format)}
-                  />
+                  <ContractDownload contractId={latestContract.id} />
                 </div>
               ) : (
                 <Badge className="bg-gray-100 text-gray-500 ring-gray-400/20 dark:bg-white/10 dark:text-gray-400">

@@ -18,6 +18,10 @@ import {
   CalendarClock,
   Wallet,
   ArrowUpRight,
+  MailCheck,
+  Hourglass,
+  MessageSquareReply,
+  BadgeCheck,
 } from "lucide-react";
 import { cn, formatCurrency } from "@/lib/utils";
 import type { CityManualStatus, FirmStatus } from "@/lib/types/database";
@@ -174,7 +178,7 @@ export default async function OverviewPage({
               <span className="text-2xl sm:text-3xl text-gray-900 tracking-tight mt-1 font-bold dark:text-gray-100">{totalContacted.toLocaleString()}</span>
             </div>
             <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center text-gray-700 dark:bg-white/10 dark:text-gray-300">
-              <span className="material-symbols-outlined text-[22px]">contact_mail</span>
+              <MailCheck className="h-5 w-5" />
             </div>
           </div>
           <div className="mt-6 flex flex-wrap items-end justify-between gap-2">
@@ -198,7 +202,7 @@ export default async function OverviewPage({
               <span className="text-2xl sm:text-3xl text-gray-900 tracking-tight mt-1 font-bold dark:text-gray-100">{inProgress.toLocaleString()}</span>
             </div>
             <div className="w-10 h-10 rounded-lg bg-brand-50 flex items-center justify-center text-brand-600 dark:bg-brand-500/10 dark:text-brand-400">
-              <span className="material-symbols-outlined text-[22px]">hourglass_top</span>
+              <Hourglass className="h-5 w-5" />
             </div>
           </div>
           <div className="mt-6 flex flex-wrap items-center justify-between gap-2">
@@ -222,7 +226,7 @@ export default async function OverviewPage({
               <span className="text-2xl sm:text-3xl text-gray-900 tracking-tight mt-1 font-bold dark:text-gray-100">{responded.toLocaleString()}</span>
             </div>
             <div className="w-10 h-10 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400">
-              <span className="material-symbols-outlined text-[22px]">quickreply</span>
+              <MessageSquareReply className="h-5 w-5" />
             </div>
           </div>
           <div className="mt-6 flex flex-wrap items-center justify-between gap-2">
@@ -246,7 +250,7 @@ export default async function OverviewPage({
               <span className="text-2xl sm:text-3xl text-emerald-600 tracking-tight mt-1 font-bold dark:text-emerald-400">{clients.toLocaleString()}</span>
             </div>
             <div className="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400">
-              <span className="material-symbols-outlined text-[22px]">verified</span>
+              <BadgeCheck className="h-5 w-5" />
             </div>
           </div>
           <div className="mt-6 flex flex-wrap items-end justify-between gap-2">
