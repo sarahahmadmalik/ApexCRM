@@ -10,6 +10,7 @@ import { AssistantCard } from "@/components/profile/assistant-card";
 import { ChangePasswordCard } from "@/components/profile/change-password-card";
 import { LocationTile } from "@/components/profile/location-tile";
 import { getCurrentAppUser, createClient } from "@/lib/supabase/server";
+import { aiConfigured } from "@/lib/ai/openrouter";
 import { downloadContractDocument } from "@/app/(app)/employees/actions";
 import { EMPLOYMENT_TYPE_LABELS, formatDate, formatSalary } from "@/lib/utils";
 import { redirect } from "next/navigation";
@@ -38,7 +39,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Pro
         .maybeSingle()
     : { data: null };
 
-  const aiEnabled = !!process.env.OPENROUTER_KEY;
+  const aiEnabled = aiConfigured();
   const tabs: SettingsTab[] = [
     {
       id: "account",

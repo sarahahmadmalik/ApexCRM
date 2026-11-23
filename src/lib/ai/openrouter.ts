@@ -23,26 +23,25 @@ export type ToolSpec = {
 export class AiError extends Error {}
 
 export function aiConfigured() {
-  return !!process.env.OPENROUTER_KEY;
+  return !!(process.env.OPENROUTER_KEY || process.env.OPENROUTER_FALLBACK_KEY || process.env["fallback key"]);
 }
 
-export async function chatCompletion({
-  messages,
-  tools,
-  json = false,
-  maxTokens = 1500,
-  temperature = 0.2,
-}: {
-  messages: ChatMessage[];
-  tools?: ToolSpec[];
-  /** Ask for a single JSON object (used by the briefing). */
-  json?: boolean;
-  maxTokens?: number;
-  temperature?: number;
-}) {
-  const key = process.env.OPENROUTER_KEY;
-  if (!key) throw new AiError("The AI assistant isn't configured. Add OPENROUTER_KEY to the environment.");
-
+async function callOpenRouter(
+  key: string,
+  {
+    messages,
+    tools,
+    json,
+    maxTokens,
+    temperature,
+  }: {
+    messages: ChatMessage[];
+    tools?: ToolSpec[];
+    json: boolean;
+    maxTokens: number;
+    temperature: number;
+  }
+) {
   let res: Response;
   try {
     res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
@@ -51,7 +50,7 @@ export async function chatCompletion({
       headers: {
         Authorization: `Bearer ${key}`,
         "Content-Type": "application/json",
-        "X-Title": "Dua Dev Internal Tool",
+        "X-Title": "Apex CRM",
       },
       body: JSON.stringify({
         model: process.env.OPENROUTER_MODEL || DEFAULT_MODEL,
@@ -81,6 +80,43 @@ export async function chatCompletion({
   const message = data.choices?.[0]?.message;
   if (!message) throw new AiError(data.error?.message ?? "The AI service returned an empty response.");
   return { content: message.content ?? "", toolCalls: message.tool_calls ?? [] };
+}
+
+export async function chatCompletion({
+  messages,
+  tools,
+  json = false,
+  maxTokens = 1500,
+  temperature = 0.2,
+}: {
+  messages: ChatMessage[];
+  tools?: ToolSpec[];
+  /** Ask for a single JSON object (used by the briefing). */
+  json?: boolean;
+  maxTokens?: number;
+  temperature?: number;
+}) {
+  const keys = [
+    process.env.OPENROUTER_KEY,
+    process.env.OPENROUTER_FALLBACK_KEY,
+    process.env["fallback key"],
+  ].filter((k): k is string => Boolean(k && k.trim()));
+
+  if (keys.length === 0) {
+    throw new AiError("The AI assistant isn't configured. Add OPENROUTER_KEY to the environment.");
+  }
+
+  let lastError: unknown;
+  for (const key of keys) {
+    try {
+      return await callOpenRouter(key.trim(), { messages, tools, json, maxTokens, temperature });
+    } catch (err) {
+      lastError = err;
+      // Silently try the next fallback key without surfacing an error to the user
+    }
+  }
+
+  throw lastError instanceof Error ? lastError : new AiError("The AI service is unavailable right now.");
 }
 
 /** Pulls the first JSON object out of a model reply (tolerates ```json fences and stray prose). */

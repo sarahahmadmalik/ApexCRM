@@ -1,4 +1,4 @@
-import { CheckCircle2, Globe2, Sparkles, Timer } from "lucide-react";
+import { CheckCircle2, Globe2, Timer } from "lucide-react";
 import { Logo } from "@/components/nav/logo";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 
@@ -6,7 +6,13 @@ import { ThemeToggle } from "@/components/theme/theme-toggle";
  * Shared frame for the signed-out pages (login, reset password): a cinematic,
  * glassmorphic product visual on large screens beside the sign-in panel.
  */
-export function AuthShell({ children }: { children: React.ReactNode }) {
+export function AuthShell({
+  children,
+  headerActions,
+}: {
+  children: React.ReactNode;
+  headerActions?: React.ReactNode;
+}) {
   return (
     <div className="grid min-h-dvh w-full flex-1 grid-rows-[minmax(0,1fr)] lg:grid-cols-[minmax(0,1.08fr)_minmax(0,1fr)]">
       {/* Cinematic Product Showcase Panel */}
@@ -31,12 +37,8 @@ export function AuthShell({ children }: { children: React.ReactNode }) {
         />
 
         {/* Top Brand Mark */}
-        <div className="relative z-10 flex items-center justify-between">
+        <div className="relative z-10 flex items-center">
           <Logo dark className="h-9 w-auto" />
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-[11px] font-medium text-brand-300 backdrop-blur-md">
-            <Sparkles className="h-3 w-3 text-brand-400" />
-            Live Enterprise OS
-          </span>
         </div>
 
         {/* Center: Layered Glassmorphic Product Canvas */}
@@ -170,7 +172,10 @@ export function AuthShell({ children }: { children: React.ReactNode }) {
             <Logo className="h-8 w-auto dark:hidden" />
             <Logo dark className="hidden h-8 w-auto dark:block" />
           </div>
-          <ThemeToggle />
+          <div className="flex items-center gap-2.5">
+            {headerActions}
+            <ThemeToggle />
+          </div>
         </div>
 
         <div className="flex flex-1 items-center justify-center px-6 py-10 sm:px-10">

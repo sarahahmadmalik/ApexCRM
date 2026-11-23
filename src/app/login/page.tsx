@@ -1,31 +1,36 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState, useRef } from "react";
-import { Sparkles, KeyRound } from "lucide-react";
+import { useActionState, useRef, useTransition } from "react";
+import { ChevronDown, Loader2, Users } from "lucide-react";
 import { login } from "./actions";
 import { Input, Label } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
+import { DropdownMenu } from "@/components/ui/dropdown-menu";
 import { AuthShell } from "@/components/auth/auth-shell";
 import { FormError } from "@/components/auth/form-error";
 import { PasswordInput } from "@/components/auth/password-input";
+import { cn } from "@/lib/utils";
 
-const SAMPLE_ACCOUNTS = [
+const DEMO_USERS = [
   {
-    label: "Boss / Executive",
-    role: "VP of Operations (Full CRM, HR & Approvals)",
+    name: "Alex Vance",
+    badge: "Boss / Admin",
+    badgeClass: "bg-brand-50 text-brand-700 ring-brand-600/20 dark:bg-brand-500/15 dark:text-brand-300",
     email: "demo@apexcrm.io",
     password: "ApexDemo2026!",
   },
   {
-    label: "Project Manager",
-    role: "Delivery Lead (Projects, Hiring & CRM)",
+    name: "Maya Lin",
+    badge: "Manager",
+    badgeClass: "bg-indigo-50 text-indigo-700 ring-indigo-600/20 dark:bg-indigo-500/15 dark:text-indigo-300",
     email: "team@apexcrm.io",
     password: "ApexTeam2026!",
   },
   {
-    label: "Employee Portal",
-    role: "Engineer (Work Timer, Leave & Salary Only)",
+    name: "Lukas Weber",
+    badge: "Employee",
+    badgeClass: "bg-emerald-50 text-emerald-700 ring-emerald-600/20 dark:bg-emerald-500/15 dark:text-emerald-300",
     email: "employee@apexcrm.io",
     password: "ApexStaff2026!",
   },
@@ -33,56 +38,74 @@ const SAMPLE_ACCOUNTS = [
 
 export default function LoginPage() {
   const [state, formAction, pending] = useActionState(login, { error: "", email: "" });
+  const [demoPending, startDemoTransition] = useTransition();
   const formRef = useRef<HTMLFormElement>(null);
   const invalid = state.error ? true : undefined;
   const describedBy = state.error ? "login-error" : undefined;
 
-  function fillSampleCredentials(email: string, password: string) {
-    const form = formRef.current;
-    if (!form) return;
-    const emailInput = form.querySelector<HTMLInputElement>('input[name="email"]');
-    const passwordInput = form.querySelector<HTMLInputElement>('input[name="password"]');
-    if (emailInput) emailInput.value = email;
-    if (passwordInput) passwordInput.value = password;
+  function autoLoginDemo(email: string, password: string) {
+    const fd = new FormData();
+    fd.set("email", email);
+    fd.set("password", password);
+    startDemoTransition(() => {
+      formAction(fd);
+    });
   }
 
-  return (
-    <AuthShell>
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Welcome to ApexCRM</h1>
-        <p className="mt-1.5 text-sm text-gray-500 dark:text-gray-400">
-          Sign in to explore the interactive CRM, Talent Acquisition, Project Delivery, and Finance suite.
-        </p>
-      </div>
+  const isSigningIn = pending || demoPending;
 
-      {/* Interactive Website Showcase Quick-Login */}
-      <div className="mb-6 rounded-xl border border-brand-200 bg-brand-50/60 p-3.5 dark:border-brand-500/25 dark:bg-brand-500/10">
-        <div className="flex items-center gap-1.5 text-xs font-bold tracking-wider text-brand-700 uppercase dark:text-brand-300">
-          <Sparkles className="h-3.5 w-3.5" />
-          Interactive Demo Accounts
-        </div>
-        <p className="mt-1 text-xs text-gray-600 dark:text-gray-300">
-          Click a sample account below to autofill credentials for the live showcase:
-        </p>
-        <div className="mt-2.5 grid grid-cols-1 gap-2">
-          {SAMPLE_ACCOUNTS.map((acct) => (
+  const demoMenu = (
+    <DropdownMenu
+      align="right"
+      panelClassName="w-64 p-1.5"
+      trigger={({ open, toggle }) => (
+        <button
+          type="button"
+          onClick={toggle}
+          disabled={isSigningIn}
+          className="inline-flex h-9 cursor-pointer items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 text-xs font-semibold text-gray-700 shadow-2xs transition-colors hover:bg-gray-50 disabled:opacity-50 dark:border-white/10 dark:bg-navy-800 dark:text-gray-200 dark:hover:bg-white/10"
+        >
+          {demoPending ? <Loader2 className="h-3.5 w-3.5 animate-spin text-brand-500" /> : <Users className="h-3.5 w-3.5 text-brand-500" />}
+          <span>Demo</span>
+          <ChevronDown className={cn("h-3.5 w-3.5 text-gray-400 transition-transform duration-150", open && "rotate-180")} />
+        </button>
+      )}
+    >
+      {(close) => (
+        <div className="space-y-0.5">
+          {DEMO_USERS.map((u) => (
             <button
-              key={acct.email}
+              key={u.email}
               type="button"
-              onClick={() => fillSampleCredentials(acct.email, acct.password)}
-              className="group flex cursor-pointer flex-col items-start rounded-lg border border-brand-200/80 bg-white px-3 py-2 text-left transition-all hover:border-brand-500 hover:shadow-xs dark:border-white/10 dark:bg-navy-800 dark:hover:border-brand-400"
+              onClick={() => {
+                close();
+                autoLoginDemo(u.email, u.password);
+              }}
+              className="flex w-full cursor-pointer items-center justify-between gap-2 rounded-lg px-3 py-2.5 text-left transition-colors hover:bg-gray-50 dark:hover:bg-white/5"
             >
-              <span className="flex w-full items-center justify-between text-xs font-semibold text-gray-900 dark:text-white">
-                {acct.label}
-                <KeyRound className="h-3 w-3 text-brand-500 opacity-70 group-hover:opacity-100" />
+              <span className="truncate text-sm font-medium text-gray-900 dark:text-gray-100">{u.name}</span>
+              <span
+                className={cn(
+                  "shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold tracking-wide uppercase ring-1 ring-inset",
+                  u.badgeClass
+                )}
+              >
+                {u.badge}
               </span>
-              <span className="font-mono-brand mt-0.5 text-[11px] text-brand-600 dark:text-brand-300">
-                {acct.email}
-              </span>
-              <span className="text-[10px] text-gray-400 dark:text-gray-500">{acct.role}</span>
             </button>
           ))}
         </div>
+      )}
+    </DropdownMenu>
+  );
+
+  return (
+    <AuthShell headerActions={demoMenu}>
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Welcome back</h1>
+        <p className="mt-1.5 text-sm text-gray-500 dark:text-gray-400">
+          Sign in to your Apex CRM workspace, or pick a role from Demo above.
+        </p>
       </div>
 
       <form ref={formRef} action={formAction} className="space-y-5">
@@ -96,8 +119,8 @@ export default function LoginPage() {
             autoFocus
             maxLength={254}
             autoComplete="username"
-            placeholder="demo@apexcrm.io"
-            defaultValue={state.email || "demo@apexcrm.io"}
+            placeholder="you@apexcrm.io"
+            defaultValue={state.email}
             aria-invalid={invalid}
             aria-describedby={describedBy}
             className="h-11 text-base sm:text-sm"
@@ -122,7 +145,6 @@ export default function LoginPage() {
             maxLength={256}
             autoComplete="current-password"
             placeholder="Enter your password"
-            defaultValue="ApexDemo2026!"
             aria-invalid={invalid}
             aria-describedby={describedBy}
           />
@@ -130,8 +152,8 @@ export default function LoginPage() {
 
         <FormError id="login-error" message={state.error} />
 
-        <Button type="submit" className="h-11 w-full" loading={pending}>
-          {pending ? "Signing in..." : "Sign in to ApexCRM"}
+        <Button type="submit" className="h-11 w-full" loading={isSigningIn}>
+          {isSigningIn ? "Signing in..." : "Sign in"}
         </Button>
       </form>
     </AuthShell>

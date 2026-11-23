@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { AppShell } from "@/components/nav/app-shell";
 import { SiteLoader } from "@/components/ui/site-loader";
 import { getCurrentAppUser } from "@/lib/supabase/server";
+import { aiConfigured } from "@/lib/ai/openrouter";
 import { JUST_SIGNED_IN_COOKIE } from "@/lib/security";
 import { redirect } from "next/navigation";
 
@@ -25,7 +26,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         workspaceName={appUser.workspaceName}
         permissions={appUser.permissions}
         userEmail={appUser.email ?? ""}
-        aiEnabled={!!process.env.OPENROUTER_KEY}
+        aiEnabled={aiConfigured()}
         assistantPlacement={appUser.assistant_placement ?? "header"}
       >
         {children}
