@@ -1359,7 +1359,7 @@ function AddTimesheetDialog({
     >
       <form id="add-timesheet-form" action={handleSubmit} className="space-y-4">
         <FormRow label="Employee name" required>
-          <Input name="employee_name" defaultValue={defaultEmployeeName} placeholder="e.g. Sara Malik" required />
+          <Input name="employee_name" defaultValue={defaultEmployeeName} placeholder="e.g. Alex Vance" required />
         </FormRow>
         <FormRow label="Project / Workstream" required>
           <Input name="project_name" placeholder="e.g. Nordic Logistics ERP Modernization" required />

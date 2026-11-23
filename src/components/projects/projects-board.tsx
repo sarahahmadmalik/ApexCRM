@@ -850,7 +850,7 @@ function AddProjectDialog({
             <Input name="client_name" placeholder="e.g. Gamma Logistik GmbH" />
           </FormRow>
           <FormRow label="Delivery lead" required>
-            <Input name="owner_name" placeholder="e.g. Sara Malik" required />
+            <Input name="owner_name" placeholder="e.g. Alex Vance" required />
           </FormRow>
         </div>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">

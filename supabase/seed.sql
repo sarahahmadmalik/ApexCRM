@@ -47,7 +47,12 @@ begin
     );
 
     insert into app_users (id, full_name, role, account_role)
-    values (v_user_id, 'Sara Malik', 'CTO', 'admin');
+    values (
+      v_user_id,
+      'Sara Malik',
+      'CTO',
+      case when exists (select 1 from app_users where account_role = 'admin') then 'member' else 'admin' end
+    );
 
     raise notice 'Created % (CTO, workspace admin) — sign in at /login with the password from this script.', v_email;
   end if;

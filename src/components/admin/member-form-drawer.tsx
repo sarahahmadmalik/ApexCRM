@@ -165,7 +165,7 @@ export function MemberFormDrawer({ open, onClose, member }: { open: boolean; onC
               readOnly={editing}
               disabled={editing}
               maxLength={254}
-              placeholder="name@dua-dev.com"
+              placeholder="name@apexcrm.io"
             />
           </div>
 

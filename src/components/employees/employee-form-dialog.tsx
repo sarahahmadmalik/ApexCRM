@@ -196,7 +196,7 @@ export function EmployeeFormDialog({
         <div className="flex-1 space-y-5">
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <FormRow label="Full name" required error={errors.full_name}>
-              <Input name="full_name" defaultValue={employee?.full_name} placeholder="e.g. Sara Malik" />
+              <Input name="full_name" defaultValue={employee?.full_name} placeholder="e.g. Alex Vance" />
             </FormRow>
             <FormRow label="Position">
               <Input name="position" defaultValue={employee?.position ?? ""} placeholder="e.g. Software Engineer" />
@@ -211,7 +211,7 @@ export function EmployeeFormDialog({
               />
             </FormRow>
             <FormRow label="Email" error={errors.email}>
-              <Input name="email" type="email" defaultValue={employee?.email ?? ""} placeholder="name@dua-dev.com" />
+              <Input name="email" type="email" defaultValue={employee?.email ?? ""} placeholder="name@apexcrm.io" />
             </FormRow>
             <div className="sm:col-span-2">
               <FormRow label="Phone" error={errors.phone}>

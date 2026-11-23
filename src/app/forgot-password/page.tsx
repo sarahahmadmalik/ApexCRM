@@ -35,7 +35,7 @@ export default function ForgotPasswordPage() {
             autoFocus
             maxLength={254}
             autoComplete="username"
-            placeholder="you@dua-dev.com"
+            placeholder="you@apexcrm.io"
             defaultValue={state.email}
             aria-invalid={state.error ? true : undefined}
             aria-describedby={state.error ? "forgot-error" : undefined}

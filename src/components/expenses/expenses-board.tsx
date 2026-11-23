@@ -503,7 +503,7 @@ function AddExpenseDialog({
         </FormRow>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <FormRow label="Submitted by" required>
-            <Input name="employee_name" placeholder="e.g. Sara Malik" required />
+            <Input name="employee_name" placeholder="e.g. Alex Vance" required />
           </FormRow>
           <FormRow label="Category">
             <Combobox
