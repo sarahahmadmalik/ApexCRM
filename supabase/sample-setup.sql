@@ -12,7 +12,7 @@ create extension if not exists "pgcrypto";
 -- ENUMS
 -- ============================================================================
 
-do  begin
+do $$ begin
   create type firm_status as enum (
   'not_started',   -- no outreach yet
   'in_progress',   -- currently sending / working on this firm
@@ -22,27 +22,27 @@ do  begin
   'client'         -- firm has become a client
 );
 exception when duplicate_object then null;
-end ;
+end $$;
 
-do  begin
+do $$ begin
   create type city_manual_status as enum ('not_started', 'in_progress', 'completed');
 exception when duplicate_object then null;
-end ;
+end $$;
 
-do  begin
+do $$ begin
   create type angebot_status as enum ('draft', 'sent', 'signed', 'rejected', 'expired');
 exception when duplicate_object then null;
-end ;
+end $$;
 
-do  begin
+do $$ begin
   create type invoice_status as enum ('draft', 'sent', 'paid', 'overdue', 'cancelled');
 exception when duplicate_object then null;
-end ;
+end $$;
 
-do  begin
+do $$ begin
   create type contract_status as enum ('draft', 'final');
 exception when duplicate_object then null;
-end ;
+end $$;
 
 -- ============================================================================
 -- APP USERS (allowlist â€” only CEO / CTO get access to this tool)
@@ -604,10 +604,10 @@ $$;
 -- Employment type on the employee roster (full time / part time / contract).
 -- Run after 0003_rename_interested_to_negotiation.sql.
 
-do  begin
+do $$ begin
   create type employment_type as enum ('full_time', 'part_time', 'contract');
 exception when duplicate_object then null;
-end ;
+end $$;
 
 alter table employees
   add column employment_type employment_type not null default 'full_time';
@@ -645,10 +645,10 @@ alter table employees
 -- ---------------------------------------------------------------------------
 
 alter type angebot_status rename to angebot_status_old;
-do  begin
+do $$ begin
   create type angebot_status as enum ('draft', 'sent', 'accepted', 'rejected');
 exception when duplicate_object then null;
-end ;
+end $$;
 
 alter table angebots alter column status drop default;
 alter table angebots
