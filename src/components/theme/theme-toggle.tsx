@@ -24,7 +24,7 @@ export function ThemeToggle() {
         <button
           type="button"
           onClick={toggle}
-          title="Change theme"
+          aria-label="Change theme"
           className={cn(
             "cursor-pointer rounded-lg p-2 transition-colors",
             isDark

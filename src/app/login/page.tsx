@@ -10,33 +10,39 @@ import { DropdownMenu } from "@/components/ui/dropdown-menu";
 import { AuthShell } from "@/components/auth/auth-shell";
 import { FormError } from "@/components/auth/form-error";
 import { PasswordInput } from "@/components/auth/password-input";
+import { useTheme } from "@/components/theme/theme-provider";
 import { cn } from "@/lib/utils";
 
 const DEMO_USERS = [
   {
     name: "Alex Vance",
     badge: "Boss / Admin",
-    badgeClass: "bg-brand-50 text-brand-700 ring-brand-600/20 dark:bg-brand-500/15 dark:text-brand-300",
+    lightBadgeClass: "bg-brand-50 text-brand-700 ring-brand-600/20",
+    darkBadgeClass: "bg-brand-500/15 text-brand-300 ring-brand-400/30",
     email: "demo@apexcrm.io",
     password: "ApexDemo2026!",
   },
   {
     name: "Maya Lin",
     badge: "Manager",
-    badgeClass: "bg-indigo-50 text-indigo-700 ring-indigo-600/20 dark:bg-indigo-500/15 dark:text-indigo-300",
+    lightBadgeClass: "bg-indigo-50 text-indigo-700 ring-indigo-600/20",
+    darkBadgeClass: "bg-indigo-500/15 text-indigo-300 ring-indigo-400/30",
     email: "team@apexcrm.io",
     password: "ApexTeam2026!",
   },
   {
     name: "Lukas Weber",
     badge: "Employee",
-    badgeClass: "bg-emerald-50 text-emerald-700 ring-emerald-600/20 dark:bg-emerald-500/15 dark:text-emerald-300",
+    lightBadgeClass: "bg-emerald-50 text-emerald-700 ring-emerald-600/20",
+    darkBadgeClass: "bg-emerald-500/15 text-emerald-300 ring-emerald-400/30",
     email: "employee@apexcrm.io",
     password: "ApexStaff2026!",
   },
 ] as const;
 
 export default function LoginPage() {
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
   const [state, formAction, pending] = useActionState(login, { error: "", email: "" });
   const [demoPending, startDemoTransition] = useTransition();
   const formRef = useRef<HTMLFormElement>(null);
@@ -87,7 +93,7 @@ export default function LoginPage() {
               <span
                 className={cn(
                   "shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold tracking-wide uppercase ring-1 ring-inset",
-                  u.badgeClass
+                  isDark ? u.darkBadgeClass : u.lightBadgeClass
                 )}
               >
                 {u.badge}
