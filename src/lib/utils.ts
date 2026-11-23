@@ -31,7 +31,7 @@ export const FIRM_STATUS_COLORS: Record<string, string> = {
   not_started: "bg-slate-100 text-slate-600 ring-slate-500/20 dark:bg-slate-400/10 dark:text-slate-300 dark:ring-slate-400/20",
   in_progress: "bg-blue-50 text-blue-700 ring-blue-600/20 dark:bg-blue-400/10 dark:text-blue-300 dark:ring-blue-400/20",
   sent: "bg-amber-50 text-amber-700 ring-amber-600/20 dark:bg-amber-400/10 dark:text-amber-300 dark:ring-amber-400/20",
-  responded: "bg-violet-50 text-violet-700 ring-violet-600/20 dark:bg-violet-400/10 dark:text-violet-300 dark:ring-violet-400/20",
+  responded: "bg-blue-50 text-blue-700 ring-blue-600/20 dark:bg-blue-400/10 dark:text-blue-300 dark:ring-blue-400/20",
   negotiation: "bg-cyan-50 text-cyan-700 ring-cyan-600/20 dark:bg-cyan-400/10 dark:text-cyan-300 dark:ring-cyan-400/20",
   client: "bg-emerald-50 text-emerald-700 ring-emerald-600/20 dark:bg-emerald-400/10 dark:text-emerald-300 dark:ring-emerald-400/20",
 };
@@ -45,7 +45,7 @@ export const FIRM_STATUS_COLORS: Record<string, string> = {
 export const AVATAR_TINTS = [
   "bg-blue-50 text-blue-700 ring-blue-600/20 dark:bg-blue-400/10 dark:text-blue-300 dark:ring-blue-400/20",
   "bg-cyan-50 text-cyan-700 ring-cyan-600/20 dark:bg-cyan-400/10 dark:text-cyan-300 dark:ring-cyan-400/20",
-  "bg-violet-50 text-violet-700 ring-violet-600/20 dark:bg-violet-400/10 dark:text-violet-300 dark:ring-violet-400/20",
+  "bg-blue-50 text-blue-700 ring-blue-600/20 dark:bg-blue-400/10 dark:text-blue-300 dark:ring-blue-400/20",
   "bg-emerald-50 text-emerald-700 ring-emerald-600/20 dark:bg-emerald-400/10 dark:text-emerald-300 dark:ring-emerald-400/20",
   "bg-amber-50 text-amber-700 ring-amber-600/20 dark:bg-amber-400/10 dark:text-amber-300 dark:ring-amber-400/20",
   "bg-slate-100 text-slate-600 ring-slate-500/20 dark:bg-slate-400/10 dark:text-slate-300 dark:ring-slate-400/20",
@@ -60,7 +60,7 @@ export const FIRM_STATUS_DOT: Record<string, string> = {
   not_started: "bg-slate-400",
   in_progress: "bg-blue-600",
   sent: "bg-amber-500",
-  responded: "bg-violet-500",
+  responded: "bg-blue-500",
   negotiation: "bg-cyan-600",
   client: "bg-emerald-500",
 };
@@ -118,7 +118,7 @@ export const CITY_STATUS_HEX: Record<string, string> = {
 
 /** Map-marker color for a city that has landed at least one client firm — takes
  * priority over the status color, since it's the single most notable outcome. */
-export const CITY_CLIENT_HEX = "#8b5cf6";
+export const CITY_CLIENT_HEX = "#2563eb";
 
 export function calcTotals(lineItems: { unit_price: number; total: number }[], vatRate: number) {
   const net = lineItems.reduce((sum, li) => sum + (Number(li.total) || 0), 0);

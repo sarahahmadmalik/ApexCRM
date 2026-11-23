@@ -57,7 +57,7 @@ const toneClasses: Record<StatTone, string> = {
   emerald: "bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400",
   amber: "bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400",
   rose: "bg-rose-50 text-rose-600 dark:bg-rose-500/10 dark:text-rose-400",
-  indigo: "bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400",
+  indigo: "bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400",
   slate: "bg-slate-100 text-slate-600 dark:bg-slate-400/10 dark:text-slate-300",
 };
 
@@ -66,7 +66,7 @@ const sparklineStrokeClasses: Record<StatTone, string> = {
   emerald: "text-emerald-500 dark:text-emerald-400",
   amber: "text-amber-500 dark:text-amber-400",
   rose: "text-rose-500 dark:text-rose-400",
-  indigo: "text-indigo-500 dark:text-indigo-400",
+  indigo: "text-blue-500 dark:text-blue-400",
   slate: "text-brand-500 dark:text-brand-400",
 };
 

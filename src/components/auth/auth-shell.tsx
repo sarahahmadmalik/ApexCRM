@@ -33,7 +33,7 @@ export function AuthShell({
         />
         <div
           aria-hidden
-          className="pointer-events-none absolute right-0 bottom-0 h-96 w-96 rounded-full bg-indigo-500/15 blur-3xl"
+          className="pointer-events-none absolute right-0 bottom-0 h-96 w-96 rounded-full bg-blue-500/15 blur-3xl"
         />
 
         {/* Top Brand Mark */}
@@ -151,7 +151,7 @@ export function AuthShell({
               </div>
 
               <div className="flex items-center gap-2 rounded-2xl border border-white/12 bg-navy-900/85 px-3.5 py-2.5 shadow-xl backdrop-blur-xl">
-                <Globe2 className="h-4 w-4 text-indigo-400" />
+                <Globe2 className="h-4 w-4 text-blue-400" />
                 <span className="text-xs font-medium text-slate-300">DACH · Nordics · Benelux</span>
               </div>
             </div>

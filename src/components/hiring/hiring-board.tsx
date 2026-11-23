@@ -68,7 +68,7 @@ const STAGE_LABELS: Record<CandidateStage, string> = {
 const STAGE_STYLES: Record<CandidateStage, string> = {
   applied: "bg-slate-100 text-slate-700 ring-slate-500/20 dark:bg-slate-400/10 dark:text-slate-300",
   screening: "bg-brand-50 text-brand-700 ring-brand-600/20 dark:bg-brand-500/10 dark:text-brand-300",
-  interview: "bg-indigo-50 text-indigo-700 ring-indigo-600/20 dark:bg-indigo-500/10 dark:text-indigo-300",
+  interview: "bg-blue-50 text-blue-700 ring-blue-600/20 dark:bg-blue-500/10 dark:text-blue-300",
   offer: "bg-amber-50 text-amber-700 ring-amber-600/20 dark:bg-amber-500/10 dark:text-amber-300",
   hired: "bg-emerald-50 text-emerald-700 ring-emerald-600/20 dark:bg-emerald-500/10 dark:text-emerald-300",
   rejected: "bg-rose-50 text-rose-700 ring-rose-600/20 dark:bg-rose-500/10 dark:text-rose-300",
@@ -635,7 +635,7 @@ export function HiringBoard({
                       <strong className="text-gray-900 dark:text-white">{applicantCount}</strong> applicants
                     </span>
                     <span>
-                      <strong className="text-indigo-600 dark:text-indigo-400">{interviewCount}</strong> in interview
+                      <strong className="text-blue-600 dark:text-blue-400">{interviewCount}</strong> in interview
                     </span>
                   </div>
                   <div className="flex items-center gap-2">

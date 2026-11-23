@@ -25,8 +25,8 @@ const DEMO_USERS = [
   {
     name: "Maya Lin",
     badge: "Manager",
-    lightBadgeClass: "bg-indigo-50 text-indigo-700 ring-indigo-600/20",
-    darkBadgeClass: "bg-indigo-500/15 text-indigo-300 ring-indigo-400/30",
+    lightBadgeClass: "bg-blue-50 text-blue-700 ring-blue-600/20",
+    darkBadgeClass: "bg-blue-500/15 text-blue-300 ring-blue-400/30",
     email: "team@apexcrm.io",
     password: "ApexTeam2026!",
   },

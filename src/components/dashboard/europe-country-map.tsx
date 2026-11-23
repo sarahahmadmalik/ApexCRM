@@ -43,7 +43,7 @@ export function EuropeCountryMap({
 }: {
   country: string;
   cityStatuses: CityStatusMap;
-  /** "state|city" keys of cities with at least one client firm — drawn purple, taking priority over the status color. */
+  /** "state|city" keys of cities with at least one client firm — drawn blue, taking priority over the status color. */
   clientCities?: Set<string>;
   selectedCity?: { state: string; city: string } | null;
   onCitySelect?: (city: { state: string; city: string }) => void;

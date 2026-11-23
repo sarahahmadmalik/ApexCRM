@@ -225,13 +225,13 @@ export default async function OverviewPage({
               <span className="text-[11px] uppercase tracking-wider text-gray-500 font-semibold dark:text-gray-400">Firms Responded</span>
               <span className="text-2xl sm:text-3xl text-gray-900 tracking-tight mt-1 font-bold dark:text-gray-100">{responded.toLocaleString()}</span>
             </div>
-            <div className="w-10 h-10 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400">
+            <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center text-blue-600 dark:bg-blue-500/10 dark:text-blue-400">
               <MessageSquareReply className="h-5 w-5" />
             </div>
           </div>
           <div className="mt-6 flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2">
-              <span className="px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 text-[11px] font-bold dark:bg-indigo-500/10 dark:text-indigo-300">{replyRate}% reply rate</span>
+              <span className="px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 text-[11px] font-bold dark:bg-blue-500/10 dark:text-blue-300">{replyRate}% reply rate</span>
               <span className="text-gray-400 text-xs font-medium dark:text-gray-500">
                 {respondedTrend ? respondedTrend.label : "Collecting daily history…"}
               </span>
@@ -301,7 +301,7 @@ export default async function OverviewPage({
           className="group flex flex-col justify-between rounded-2xl border border-gray-200 bg-white p-4 shadow-xs transition-all hover:-translate-y-0.5 hover:border-brand-400 hover:shadow-md dark:border-white/10 dark:bg-navy-900 dark:hover:border-brand-400"
         >
           <div className="flex items-center justify-between">
-            <span className="inline-flex items-center gap-2 text-xs font-bold tracking-wider text-indigo-600 uppercase dark:text-indigo-400">
+            <span className="inline-flex items-center gap-2 text-xs font-bold tracking-wider text-blue-600 uppercase dark:text-blue-400">
               <FolderKanban className="h-4 w-4" />
               Projects &amp; Tasks
             </span>
@@ -371,7 +371,7 @@ export default async function OverviewPage({
       <Card className="card-in card-in-4 shadow-sm">
         <CardHeader
           title="Geographic Coverage"
-          description="Every tracked city in this market, plotted as a dot: gray/amber/green track outreach status, purple marks a city with a client on board."
+          description="Every tracked city in this market, plotted as a dot: gray/amber/green track outreach status, blue marks a city with a client on board."
           action={<CountryPills value={selectedCountry} />}
         />
         <MapWithPeek country={selectedCountry} cityStatuses={cityStatuses} firmsByCity={firmsByCity} />
