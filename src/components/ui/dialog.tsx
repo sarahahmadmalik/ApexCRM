@@ -128,7 +128,7 @@ export function Dialog({
     ) : (
       <div
         className={cn(
-          "fixed inset-0 z-[100] flex items-start justify-center overflow-y-auto bg-navy-900/40 px-4 py-6 backdrop-blur-[2px] transition-opacity duration-200 sm:py-8",
+          "fixed inset-0 z-[100] flex items-center justify-center overflow-y-auto bg-navy-900/40 px-4 py-6 backdrop-blur-[2px] transition-opacity duration-200 sm:py-8",
           entered ? "opacity-100" : "opacity-0"
         )}
         onMouseDown={(e) => e.target === e.currentTarget && onClose()}
@@ -137,7 +137,7 @@ export function Dialog({
           role="dialog"
           aria-modal="true"
           className={cn(
-            "flex max-h-full w-full flex-col rounded-xl bg-white shadow-xl ring-1 ring-black/5 transition-all duration-200 ease-out dark:bg-navy-800 dark:ring-white/10",
+            "my-auto flex max-h-full w-full flex-col overflow-hidden rounded-xl bg-white shadow-xl ring-1 ring-black/5 transition-all duration-200 ease-out dark:bg-navy-800 dark:ring-white/10",
             sizeClass,
             entered ? "translate-y-0 scale-100 opacity-100" : "-translate-y-3 scale-95 opacity-0"
           )}

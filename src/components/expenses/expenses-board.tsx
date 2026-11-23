@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Combobox } from "@/components/ui/combobox";
 import { Dialog } from "@/components/ui/dialog";
+import { useConfirm } from "@/components/ui/confirm-dialog";
 import { FormRow, Input, Textarea } from "@/components/ui/field";
 import { FilterBar } from "@/components/ui/filter-bar";
 import { StatusMenu } from "@/components/ui/status-menu";
@@ -90,6 +91,7 @@ export function ExpensesBoard({
   isDemoFallback?: boolean;
 }) {
   const canWrite = useCanWrite("expenses");
+  const { confirm, dialog: confirmDialog } = useConfirm();
 
   const [claims, setClaims] = useState<ExpenseClaim[]>(initialClaims);
   const [payroll, setPayroll] = useState<PayrollRun[]>(initialPayroll);
@@ -310,7 +312,14 @@ export function ExpensesBoard({
                         <button
                           type="button"
                           title="Delete claim"
-                          onClick={() => handleDeleteClaim(c)}
+                          onClick={() =>
+                            confirm({
+                              title: `Delete "${c.title}"?`,
+                              message: `This removes the expense claim for ${c.employee_name}. This can't be undone.`,
+                              confirmLabel: "Delete claim",
+                              onConfirm: () => handleDeleteClaim(c),
+                            })
+                          }
                           className="cursor-pointer rounded-md p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-500/10 dark:hover:text-red-400"
                         >
                           <Trash2 className="h-4 w-4" />
@@ -382,7 +391,14 @@ export function ExpensesBoard({
                           <button
                             type="button"
                             title="Delete payroll run"
-                            onClick={() => handleDeletePayroll(run)}
+                            onClick={() =>
+                              confirm({
+                                title: `Delete "${run.period_label}"?`,
+                                message: "This removes the payroll batch record permanently. This can't be undone.",
+                                confirmLabel: "Delete payroll",
+                                onConfirm: () => handleDeletePayroll(run),
+                              })
+                            }
                             className="cursor-pointer rounded-md p-1 text-gray-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-500/10 dark:hover:text-red-400"
                           >
                             <Trash2 className="h-3.5 w-3.5" />
@@ -411,6 +427,7 @@ export function ExpensesBoard({
         isDemoFallback={isDemoFallback}
         onCreated={(p) => setPayroll((cur) => [p, ...cur])}
       />
+      {confirmDialog}
     </div>
   );
 }

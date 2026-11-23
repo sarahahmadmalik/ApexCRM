@@ -25,6 +25,7 @@ import {
 import { cn } from "@/lib/utils";
 import { signOut } from "@/app/(app)/actions";
 import { Logo } from "@/components/nav/logo";
+import { useConfirm } from "@/components/ui/confirm-dialog";
 import { hasAccess, type PageKey, type Permissions } from "@/lib/permissions";
 
 type NavItem = { href: string; label: string; icon: typeof LayoutDashboard; page: PageKey };
@@ -79,6 +80,7 @@ export function Sidebar({
 }) {
   const pathname = usePathname();
   const [logoHovered, setLogoHovered] = useState(false);
+  const { confirm, dialog: confirmDialog } = useConfirm();
   // Only what this user may open — hiding is cosmetic, the server enforces it too.
   const visibleSections = NAV_SECTIONS.map((sec) => ({
     ...sec,
@@ -251,22 +253,29 @@ export function Sidebar({
               </nav>
 
               <div className="mt-auto border-t border-white/10 p-3">
-                <form action={signOut}>
-                  <button
-                    type="submit"
-                    title={isCompressed ? "Sign out" : undefined}
-                    className={cn(
-                      "flex w-full cursor-pointer items-center gap-3 rounded-lg py-2 text-sm font-medium text-red-400 transition-colors hover:bg-red-500/10 hover:text-red-300",
-                      isCompressed ? "justify-center px-0" : "px-3"
-                    )}
-                  >
-                    <LogOut className="h-5 w-5 shrink-0" />
-                    {!isCompressed && <span>Sign out</span>}
-                  </button>
-                </form>
+                <button
+                  type="button"
+                  onClick={() =>
+                    confirm({
+                      title: "Sign out?",
+                      message: "You will be signed out of your Apex CRM workspace.",
+                      confirmLabel: "Sign out",
+                      onConfirm: () => signOut(),
+                    })
+                  }
+                  title={isCompressed ? "Sign out" : undefined}
+                  className={cn(
+                    "flex w-full cursor-pointer items-center gap-3 rounded-lg py-2 text-sm font-medium text-red-400 transition-colors hover:bg-red-500/10 hover:text-red-300",
+                    isCompressed ? "justify-center px-0" : "px-3"
+                  )}
+                >
+                  <LogOut className="h-5 w-5 shrink-0" />
+                  {!isCompressed && <span>Sign out</span>}
+                </button>
               </div>
         </div>
       </aside>
+      {confirmDialog}
     </>
   );
 }

@@ -6,7 +6,7 @@ import { AdminPanel } from "@/components/admin/admin-panel";
 import { ErrorNotice } from "@/components/ui/error-notice";
 import type { MemberRow } from "@/components/admin/member-form-drawer";
 
-export const metadata = { title: "User Management · ApexCRM" };
+export const metadata = { title: "User Management" };
 
 export default async function AdminPage() {
   // 404 for anyone who isn't the workspace admin.

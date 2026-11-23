@@ -6,6 +6,7 @@ import type { AccountRole } from "@/lib/permissions";
 import { GlobalSearch } from "@/components/nav/global-search";
 import { DropdownMenu } from "@/components/ui/dropdown-menu";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
+import { useConfirm } from "@/components/ui/confirm-dialog";
 import { useStoredAvatar } from "@/components/profile/avatar-uploader";
 import { signOut } from "@/app/(app)/actions";
 
@@ -27,6 +28,7 @@ export function Topbar({
   onMenuClick?: () => void;
 }) {
   const avatarUrl = useStoredAvatar(userEmail);
+  const { confirm, dialog: confirmDialog } = useConfirm();
 
   return (
     <header className="sticky top-0 z-30 flex h-[72px] shrink-0 items-center gap-3 border-b border-gray-200 bg-white/90 px-4 backdrop-blur-md sm:px-6 dark:border-white/10 dark:bg-navy-900/90">
@@ -119,20 +121,28 @@ export function Topbar({
                     User Management
                   </Link>
                 )}
-                <form action={signOut}>
-                  <button
-                    type="submit"
-                    className="flex w-full cursor-pointer items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 dark:hover:bg-red-500/10"
-                  >
-                    <LogOut className="h-4 w-4" />
-                    Sign out
-                  </button>
-                </form>
+                <button
+                  type="button"
+                  onClick={() => {
+                    close();
+                    confirm({
+                      title: "Sign out?",
+                      message: "You will be signed out of your Apex CRM workspace.",
+                      confirmLabel: "Sign out",
+                      onConfirm: () => signOut(),
+                    });
+                  }}
+                  className="flex w-full cursor-pointer items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 dark:hover:bg-red-500/10"
+                >
+                  <LogOut className="h-4 w-4" />
+                  Sign out
+                </button>
               </div>
             </>
           )}
         </DropdownMenu>
       </div>
+      {confirmDialog}
     </header>
   );
 }

@@ -7,7 +7,7 @@ import { ErrorNotice } from "@/components/ui/error-notice";
 import { ExpensesBoard } from "@/components/expenses/expenses-board";
 import { formatCurrency } from "@/lib/utils";
 
-export const metadata = { title: "Expenses & Payroll · ApexCRM" };
+export const metadata = { title: "Expenses & Payroll" };
 
 export default async function ExpensesPage() {
   await requirePageAccess("expenses");

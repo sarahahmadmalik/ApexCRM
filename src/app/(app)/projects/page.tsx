@@ -7,7 +7,7 @@ import { ErrorNotice } from "@/components/ui/error-notice";
 import { ProjectsBoard } from "@/components/projects/projects-board";
 import { formatCurrency } from "@/lib/utils";
 
-export const metadata = { title: "Projects & Tasks · ApexCRM" };
+export const metadata = { title: "Projects & Tasks" };
 
 export default async function ProjectsPage() {
   await requirePageAccess("projects");

@@ -6,7 +6,7 @@ import { StatCard } from "@/components/ui/card";
 import { ErrorNotice } from "@/components/ui/error-notice";
 import { HiringBoard } from "@/components/hiring/hiring-board";
 
-export const metadata = { title: "Hiring & ATS · ApexCRM" };
+export const metadata = { title: "Hiring & ATS" };
 
 export default async function HiringPage() {
   await requirePageAccess("hiring");

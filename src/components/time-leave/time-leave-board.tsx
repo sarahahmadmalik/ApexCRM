@@ -26,6 +26,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Combobox } from "@/components/ui/combobox";
 import { Dialog } from "@/components/ui/dialog";
+import { useConfirm } from "@/components/ui/confirm-dialog";
 import { FormRow, Input, Textarea, Toggle } from "@/components/ui/field";
 import { FilterBar } from "@/components/ui/filter-bar";
 import { TableEmptyState, TableHead, TableShell } from "@/components/ui/table-shell";
@@ -110,6 +111,7 @@ export function TimeLeaveBoard({
   employeeProfile: EmployeeCompensationProfile;
 }) {
   const canWrite = useCanWrite("time_leave");
+  const { confirm, dialog: confirmDialog } = useConfirm();
 
   // Employees default directly to their personal portal; bosses default to manager view but can switch anytime
   const [viewMode, setViewMode] = useState<"employee" | "manager">(isBoss ? "manager" : "employee");
@@ -950,7 +952,14 @@ export function TimeLeaveBoard({
                               <button
                                 type="button"
                                 title="Delete request"
-                                onClick={() => handleDeleteLeave(item)}
+                                onClick={() =>
+                                  confirm({
+                                    title: `Delete ${item.employee_name}'s leave request?`,
+                                    message: "This removes the leave request permanently. This can't be undone.",
+                                    confirmLabel: "Delete request",
+                                    onConfirm: () => handleDeleteLeave(item),
+                                  })
+                                }
                                 className="cursor-pointer rounded-md p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-500/10 dark:hover:text-red-400"
                               >
                                 <Trash2 className="h-4 w-4" />
@@ -1042,7 +1051,14 @@ export function TimeLeaveBoard({
                               <button
                                 type="button"
                                 title="Delete entry"
-                                onClick={() => handleDeleteTimesheet(entry)}
+                                onClick={() =>
+                                  confirm({
+                                    title: `Delete ${entry.employee_name}'s timesheet entry?`,
+                                    message: `This removes the ${entry.hours_logged}h entry on ${entry.project_name}. This can't be undone.`,
+                                    confirmLabel: "Delete entry",
+                                    onConfirm: () => handleDeleteTimesheet(entry),
+                                  })
+                                }
                                 className="cursor-pointer rounded-md p-1 text-gray-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-500/10 dark:hover:text-red-400"
                               >
                                 <Trash2 className="h-3.5 w-3.5" />
@@ -1151,6 +1167,7 @@ export function TimeLeaveBoard({
         defaultEmployeeName={viewMode === "employee" ? employeeProfile.fullName : ""}
         onCreated={(t) => setTimesheets((cur) => [t, ...cur])}
       />
+      {confirmDialog}
     </div>
   );
 }

@@ -534,7 +534,14 @@ export function ProjectsBoard({
                           <button
                             type="button"
                             title="Delete task"
-                            onClick={() => handleDeleteTask(task)}
+                            onClick={() =>
+                              confirm({
+                                title: `Delete "${task.title}"?`,
+                                message: "This removes the task from the project board. This can't be undone.",
+                                confirmLabel: "Delete task",
+                                onConfirm: () => handleDeleteTask(task),
+                              })
+                            }
                             className="cursor-pointer rounded-md p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-500/10 dark:hover:text-red-400"
                           >
                             <Trash2 className="h-4 w-4" />

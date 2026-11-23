@@ -18,11 +18,25 @@ import "./dino.css";
 
 export const metadata: Metadata = {
   title: {
-    default: "Apex · CRM & Operations Platform",
-    template: "%s · Apex",
+    default: "Apex CRM · Enterprise Operations Platform",
+    template: "%s · Apex CRM",
   },
-  description: "Apex unified customer relationship, talent acquisition, project delivery, and financial operations platform.",
-  applicationName: "Apex",
+  description:
+    "Apex CRM — unified customer relationship, talent acquisition, project delivery, time & leave, and financial operations platform.",
+  applicationName: "Apex CRM",
+  openGraph: {
+    title: "Apex CRM · Enterprise Operations Platform",
+    description:
+      "Apex CRM — unified customer relationship, talent acquisition, project delivery, time & leave, and financial operations platform.",
+    siteName: "Apex CRM",
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title: "Apex CRM · Enterprise Operations Platform",
+    description:
+      "Apex CRM — unified customer relationship, talent acquisition, project delivery, time & leave, and financial operations platform.",
+  },
   icons: {
     icon: [{ url: "/icon", type: "image/png", sizes: "64x64" }],
     apple: [{ url: "/apple-icon", type: "image/png", sizes: "180x180" }],

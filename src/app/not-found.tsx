@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { BackButton } from "@/components/ui/back-button";
 import { ErrorScene, errorActionClass } from "@/components/ui/error-scene";
 
-export const metadata: Metadata = { title: "Page not found · ApexCRM" };
+export const metadata: Metadata = { title: "Page not found" };
 
 /**
  * The 404 page: for unknown URLs and for pages a user isn't allowed to know exist (User Management
