@@ -348,23 +348,23 @@ h1, h2, h3, .font-display {
   0% {
     transform: rotate(90deg);
     box-shadow:
-      0 calc(10px * var(--u)) calc(20px * var(--u)) 0 #fff inset,
-      0 calc(20px * var(--u)) calc(30px * var(--u)) 0 #ad5fff inset,
-      0 calc(60px * var(--u)) calc(60px * var(--u)) 0 #471eec inset;
+      0 calc(10px * var(--u)) calc(20px * var(--u)) 0 #e0f2fe inset,
+      0 calc(20px * var(--u)) calc(30px * var(--u)) 0 #38bdf8 inset,
+      0 calc(60px * var(--u)) calc(60px * var(--u)) 0 #0284c7 inset;
   }
   50% {
     transform: rotate(270deg);
     box-shadow:
-      0 calc(10px * var(--u)) calc(20px * var(--u)) 0 #fff inset,
-      0 calc(20px * var(--u)) calc(10px * var(--u)) 0 #d60a47 inset,
-      0 calc(40px * var(--u)) calc(60px * var(--u)) 0 #311e80 inset;
+      0 calc(10px * var(--u)) calc(20px * var(--u)) 0 #e0f2fe inset,
+      0 calc(20px * var(--u)) calc(10px * var(--u)) 0 #06b6d4 inset,
+      0 calc(40px * var(--u)) calc(60px * var(--u)) 0 #1d4ed8 inset;
   }
   100% {
     transform: rotate(450deg);
     box-shadow:
-      0 calc(10px * var(--u)) calc(20px * var(--u)) 0 #fff inset,
-      0 calc(20px * var(--u)) calc(30px * var(--u)) 0 #ad5fff inset,
-      0 calc(60px * var(--u)) calc(60px * var(--u)) 0 #471eec inset;
+      0 calc(10px * var(--u)) calc(20px * var(--u)) 0 #e0f2fe inset,
+      0 calc(20px * var(--u)) calc(30px * var(--u)) 0 #38bdf8 inset,
+      0 calc(60px * var(--u)) calc(60px * var(--u)) 0 #0284c7 inset;
   }
 }
 .ai-orb-letter {
@@ -383,7 +383,7 @@ h1, h2, h3, .font-display {
 /* Welcome card backdrop: three soft colour fields drifting slowly. */
 .ai-aurora { position: absolute; border-radius: 9999px; filter: blur(38px); opacity: .55; }
 .ai-aurora-a { width: 60%; height: 120%; left: -10%; top: -30%; background: #1d6bff; animation: ai-drift-a 11s ease-in-out infinite; }
-.ai-aurora-b { width: 55%; height: 110%; right: -12%; top: -20%; background: #7c3aed; animation: ai-drift-b 13s ease-in-out infinite; }
+.ai-aurora-b { width: 55%; height: 110%; right: -12%; top: -20%; background: #0284c7; animation: ai-drift-b 13s ease-in-out infinite; }
 .ai-aurora-c { width: 45%; height: 80%; left: 25%; bottom: -45%; background: #06b6d4; animation: ai-drift-c 9s ease-in-out infinite; }
 @keyframes ai-drift-a { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(30%, 18%) scale(1.2); } }
 @keyframes ai-drift-b { 0%, 100% { transform: translate(0, 0) scale(1.1); } 50% { transform: translate(-28%, 16%) scale(.9); } }
@@ -492,6 +492,6 @@ html { scroll-behavior: smooth; scroll-padding-top: 88px; }
 /* "Ask AI" pill in page headings: a gradient border that keeps flowing, plus a light sweep */
 @keyframes ai-pill-flow { from { background-position: 0% 50%; } to { background-position: 200% 50%; } }
 @keyframes ai-pill-sweep { 0%, 60% { transform: translateX(0) skewX(-12deg); opacity: 0; } 70% { opacity: 1; } 100% { transform: translateX(520%) skewX(-12deg); opacity: 0; } }
-.ai-pill { background: linear-gradient(90deg, #22d3ee, #8b5cf6, #22d3ee, #8b5cf6); background-size: 200% 100%; animation: ai-pill-flow 3s linear infinite; box-shadow: 0 0 16px -4px rgba(34, 211, 238, .55); }
+.ai-pill { background: linear-gradient(90deg, #22d3ee, #2563eb, #22d3ee, #2563eb); background-size: 200% 100%; animation: ai-pill-flow 3s linear infinite; box-shadow: 0 0 16px -4px rgba(34, 211, 238, .55); }
 .ai-pill-sweep { animation: ai-pill-sweep 4.2s ease-in-out infinite; }
 @media (prefers-reduced-motion: reduce) { .ai-pill, .ai-pill-sweep { animation: none !important; } }

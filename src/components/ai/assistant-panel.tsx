@@ -267,8 +267,13 @@ export function AssistantPanel() {
           })}
 
           {busy && (
-            <div className="ai-rise flex justify-center py-4">
-              <AiGenerating label="Generating" size={150} />
+            <div className="ai-rise flex max-w-[95%] gap-2.5 self-start">
+              <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-navy-900 text-cyan-300 ring-1 ring-white/10">
+                <Sparkles className="h-3.5 w-3.5" />
+              </span>
+              <div className="rounded-2xl rounded-tl-md border border-gray-200 bg-white px-3.5 py-2.5 shadow-sm dark:border-white/10 dark:bg-navy-900">
+                <AiGenerating label="Thinking" />
+              </div>
             </div>
           )}
           <div ref={bottomRef} />

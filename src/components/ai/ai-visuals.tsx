@@ -35,11 +35,12 @@ export function AiOrb({
   );
 }
 
-/** The "working on it" state: the sphere with the word rippling across it. */
-export function AiGenerating({ label = "Generating", size = 140, className }: { label?: string; size?: number; className?: string }) {
+/** The "working on it" state: clean chat-style typing indicator. */
+export function AiGenerating({ label = "Thinking", className }: { label?: string; size?: number; className?: string }) {
   return (
-    <div className={cn("flex flex-col items-center gap-3", className)}>
-      <AiOrb size={size} label={label} />
+    <div className={cn("inline-flex items-center gap-2.5 text-sm text-gray-500 dark:text-gray-400", className)} role="status" aria-label={label}>
+      <TypingDots />
+      <span className="text-xs font-medium">{label}…</span>
     </div>
   );
 }
