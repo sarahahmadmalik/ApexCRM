@@ -77,16 +77,19 @@ export function SiteLoader({ showcase = false, caption = "Loading your workspace
       role="status"
       aria-label="Loading ApexCRM"
     >
-      <svg viewBox="0 0 186 56" className="site-loader-svg" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
-        <g transform="translate(8 6)">
+      <svg viewBox="0 0 156 56" className="site-loader-svg" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+        <g transform="translate(12 6)">
+          {/* Architectural Apex mark sketching up */}
           <path
             d="M20 5 L4 39 H13.5 L20 24.5 L26.5 39 H36 L20 5 Z"
-            stroke="#ffffff"
-            strokeWidth="1.5"
-            fill="#ffffff"
             className="sl-draw"
           />
-          <path d="M20 24.5 L15.5 34.5 H24.5 L20 24.5 Z" fill={CYAN} className="sl-sq" />
+          <path
+            d="M20 24.5 L15.5 34.5 H24.5 L20 24.5 Z"
+            fill={CYAN}
+            className="sl-sq"
+          />
+          {/* Clean "apex" wordmark sketching up (no CRM in loader) */}
           <text
             x="40"
             y="34"
@@ -97,18 +100,6 @@ export function SiteLoader({ showcase = false, caption = "Loading your workspace
             className="sl-draw sl-draw-2"
           >
             apex
-          </text>
-          <text
-            x="120"
-            y="34"
-            fontFamily="Poppins, sans-serif"
-            fontSize="14"
-            fontWeight="700"
-            letterSpacing="1.4"
-            fill={CYAN}
-            className="sl-sq"
-          >
-            CRM
           </text>
         </g>
       </svg>

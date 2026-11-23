@@ -22,18 +22,6 @@ import {
 import { cn, formatCurrency } from "@/lib/utils";
 import type { CityManualStatus, FirmStatus } from "@/lib/types/database";
 import { requirePageAccess } from "@/lib/auth/guards";
-import {
-  DEMO_ACTIVITY_FEED,
-  DEMO_CITY_STATUS_ROWS,
-  DEMO_DAILY_SNAPSHOTS,
-  DEMO_EXPENSE_CLAIMS,
-  DEMO_FIRMS,
-  DEMO_JOB_CANDIDATES,
-  DEMO_JOB_OPENINGS,
-  DEMO_LEAVE_REQUESTS,
-  DEMO_PAYROLL_RUNS,
-  DEMO_PROJECTS,
-} from "@/lib/data/showcase-seed";
 
 async function countByStatus(
   supabase: Awaited<ReturnType<typeof createClient>>,
@@ -97,29 +85,14 @@ export default async function OverviewPage({
     supabase.from("payroll_runs").select("id, gross_total, period_label").order("pay_date", { ascending: false }).limit(1),
   ]);
 
-  const openingsList = openingsRes.error ? DEMO_JOB_OPENINGS : (openingsRes.data ?? []);
-  const candidatesList = candidatesRes.error ? DEMO_JOB_CANDIDATES : (candidatesRes.data ?? []);
-  const projectsList = projectsRes.error ? DEMO_PROJECTS : (projectsRes.data ?? []);
-  const leavesList = leavesRes.error ? DEMO_LEAVE_REQUESTS : (leavesRes.data ?? []);
-  const expensesList = expensesRes.error ? DEMO_EXPENSE_CLAIMS : (expensesRes.data ?? []);
-  const payrollList = payrollRes.error ? DEMO_PAYROLL_RUNS : (payrollRes.data ?? []);
+  const openingsList = openingsRes.data ?? [];
+  const candidatesList = candidatesRes.data ?? [];
+  const projectsList = projectsRes.data ?? [];
+  const leavesList = leavesRes.data ?? [];
+  const expensesList = expensesRes.data ?? [];
+  const payrollList = payrollRes.data ?? [];
 
-  // Merge database city_status rows with showcase completed/in-progress cities
-  const cityRowMap = new Map<string, (typeof DEMO_CITY_STATUS_ROWS)[number]>();
-  for (const r of DEMO_CITY_STATUS_ROWS) {
-    cityRowMap.set(`${r.country}|${r.state}|${r.city}`, r);
-  }
-  for (const r of cityRows.data ?? []) {
-    const key = `${r.country}|${r.state}|${r.city}`;
-    const existing = cityRowMap.get(key);
-    cityRowMap.set(key, {
-      ...r,
-      status: existing?.status === "completed" ? "completed" : r.status,
-      firm_count: Math.max(r.firm_count, existing?.firm_count ?? 0),
-      note: r.note ?? existing?.note ?? null,
-    });
-  }
-  const allCityRows = Array.from(cityRowMap.values());
+  const allCityRows = cityRows.data ?? [];
 
   // Per-city status for the selected country's markers/peek panel
   const cityStatuses: Record<string, CityManualStatus> = {};
@@ -130,18 +103,12 @@ export default async function OverviewPage({
     });
 
   const firmsByCity: Record<string, { id: string; name: string; status: FirmStatus }[]> = {};
-  const seenFirmNames = new Set<string>();
-  const combinedFirmsForCountry = [
-    ...DEMO_FIRMS.filter((f) => f.country === selectedCountry),
-    ...(allFirmsForCountry.data ?? []).filter((f) => f.country === selectedCountry),
-  ];
-  combinedFirmsForCountry.forEach((f) => {
-    const norm = f.name.toLowerCase();
-    if (seenFirmNames.has(norm)) return;
-    seenFirmNames.add(norm);
-    const key = `${f.state}|${f.city}`;
-    (firmsByCity[key] ??= []).push({ id: f.id, name: f.name, status: f.status });
-  });
+  (allFirmsForCountry.data ?? [])
+    .filter((f) => f.country === selectedCountry)
+    .forEach((f) => {
+      const key = `${f.state}|${f.city}`;
+      (firmsByCity[key] ??= []).push({ id: f.id, name: f.name, status: f.status });
+    });
 
   // Denominator is every city we track for that country (geo.ts), not just
   // ones that already have a firm/manual-override row — so a country with
@@ -151,20 +118,14 @@ export default async function OverviewPage({
     return { country, completed, total: citiesForCountry(country).length };
   });
 
-  const activityRows = (activity.data ?? []).length >= 4 ? (activity.data ?? []) : DEMO_ACTIVITY_FEED;
-  const activityUnavailable = false;
+  const activityRows = activity.data ?? [];
+  const activityUnavailable = Boolean(activity.error);
   const pageError = cityRows.error ?? allFirmsForCountry.error;
 
-  const effInProgress = Math.max(inProgress, 244);
-  const effSent = Math.max(sent, 1240);
-  const effResponded = Math.max(responded, 204);
-  const effNegotiation = Math.max(negotiation, 51);
-  const effClients = Math.max(clients, 32);
-
-  const totalContacted = effInProgress + effSent + effResponded + effNegotiation + effClients;
-  const inProgressRate = totalContacted > 0 ? Math.round((effInProgress / totalContacted) * 100) : 0;
-  const replyRate = totalContacted > 0 ? ((effResponded / totalContacted) * 100).toFixed(1) : "0.0";
-  const conversionRate = totalContacted > 0 ? ((effClients / totalContacted) * 100).toFixed(1) : "0.0";
+  const totalContacted = inProgress + sent + responded + negotiation + clients;
+  const inProgressRate = totalContacted > 0 ? Math.round((inProgress / totalContacted) * 100) : 0;
+  const replyRate = totalContacted > 0 ? ((responded / totalContacted) * 100).toFixed(1) : "0.0";
+  const conversionRate = totalContacted > 0 ? ((clients / totalContacted) * 100).toFixed(1) : "0.0";
 
   const getProgressColor = (pct: number) => {
     if (pct < 30) return "bg-red-500";
@@ -172,8 +133,8 @@ export default async function OverviewPage({
     return "bg-emerald-500";
   };
 
-  const snapshotRows = (snapshots.data ?? []).length >= 5 ? (snapshots.data ?? []) : DEMO_DAILY_SNAPSHOTS;
-  const baselineInfo = pickTrendBaseline(snapshotRows) ?? { row: snapshotRows[0], days: 30 };
+  const snapshotRows = snapshots.data ?? [];
+  const baselineInfo = pickTrendBaseline(snapshotRows);
   const baseline = baselineInfo?.row ?? null;
   const trendDays = baselineInfo?.days ?? 30;
   const baselineContacted = baseline
@@ -181,9 +142,9 @@ export default async function OverviewPage({
     : null;
 
   const contactedTrend = buildTrend(totalContacted, baselineContacted, trendDays);
-  const inProgressTrend = buildTrend(effInProgress, baseline?.in_progress_count ?? null, trendDays);
-  const respondedTrend = buildTrend(effResponded, baseline?.responded_count ?? null, trendDays);
-  const clientsTrend = buildTrend(effClients, baseline?.client_count ?? null, trendDays);
+  const inProgressTrend = buildTrend(inProgress, baseline?.in_progress_count ?? null, trendDays);
+  const respondedTrend = buildTrend(responded, baseline?.responded_count ?? null, trendDays);
+  const clientsTrend = buildTrend(clients, baseline?.client_count ?? null, trendDays);
 
   const contactedSeries = [
     ...snapshotRows
@@ -192,7 +153,7 @@ export default async function OverviewPage({
     totalContacted,
   ];
   const contactedSpark = sparklinePath(contactedSeries);
-  const clientsSpark = sparklinePath([...snapshotRows.slice(-13).map((r) => r.client_count), effClients]);
+  const clientsSpark = sparklinePath([...snapshotRows.slice(-13).map((r) => r.client_count), clients]);
 
   return (
     <div className="space-y-6">
@@ -234,7 +195,7 @@ export default async function OverviewPage({
           <div className="flex items-start justify-between">
             <div className="flex flex-col">
               <span className="text-[11px] uppercase tracking-wider text-gray-500 font-semibold dark:text-gray-400">Firms In Progress</span>
-              <span className="text-2xl sm:text-3xl text-gray-900 tracking-tight mt-1 font-bold dark:text-gray-100">{effInProgress.toLocaleString()}</span>
+              <span className="text-2xl sm:text-3xl text-gray-900 tracking-tight mt-1 font-bold dark:text-gray-100">{inProgress.toLocaleString()}</span>
             </div>
             <div className="w-10 h-10 rounded-lg bg-brand-50 flex items-center justify-center text-brand-600 dark:bg-brand-500/10 dark:text-brand-400">
               <span className="material-symbols-outlined text-[22px]">hourglass_top</span>
@@ -258,7 +219,7 @@ export default async function OverviewPage({
           <div className="flex items-start justify-between">
             <div className="flex flex-col">
               <span className="text-[11px] uppercase tracking-wider text-gray-500 font-semibold dark:text-gray-400">Firms Responded</span>
-              <span className="text-2xl sm:text-3xl text-gray-900 tracking-tight mt-1 font-bold dark:text-gray-100">{effResponded.toLocaleString()}</span>
+              <span className="text-2xl sm:text-3xl text-gray-900 tracking-tight mt-1 font-bold dark:text-gray-100">{responded.toLocaleString()}</span>
             </div>
             <div className="w-10 h-10 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400">
               <span className="material-symbols-outlined text-[22px]">quickreply</span>
@@ -282,7 +243,7 @@ export default async function OverviewPage({
           <div className="flex items-start justify-between">
             <div className="flex flex-col">
               <span className="text-[11px] uppercase tracking-wider text-gray-500 font-semibold dark:text-gray-400">Clients Won</span>
-              <span className="text-2xl sm:text-3xl text-emerald-600 tracking-tight mt-1 font-bold dark:text-emerald-400">{effClients.toLocaleString()}</span>
+              <span className="text-2xl sm:text-3xl text-emerald-600 tracking-tight mt-1 font-bold dark:text-emerald-400">{clients.toLocaleString()}</span>
             </div>
             <div className="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400">
               <span className="material-symbols-outlined text-[22px]">verified</span>

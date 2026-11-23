@@ -8,7 +8,6 @@ import { ErrorNotice } from "@/components/ui/error-notice";
 import { COUNTRY_NAMES } from "@/lib/data/geo";
 import { buildCityRows } from "@/lib/data/city-status";
 import { countByStatus, filterCityRows, sortCityRows } from "@/lib/data/city-filter";
-import { DEMO_CITY_STATUS_ROWS } from "@/lib/data/showcase-seed";
 import { CountryPills } from "@/components/dashboard/country-pills";
 import { cn } from "@/lib/utils";
 import { requirePageAccess } from "@/lib/auth/guards";
@@ -25,25 +24,9 @@ export default async function CitiesPage({
   const supabase = await createClient();
   const page = Math.max(1, parseInt(pageParam ?? "1", 10) || 1);
 
-  // One unfiltered fetch (city_status has one row per city that has firms or a manual status),
-  // merged with the showcase completed/in-progress cities.
+  // One unfiltered fetch (city_status has one row per city that has firms or a manual status).
   const { data, error } = await supabase.from("city_status").select("*");
-  const cityRowMap = new Map<string, CityRow>();
-  for (const r of DEMO_CITY_STATUS_ROWS) {
-    cityRowMap.set(`${r.country}|${r.state}|${r.city}`, r as CityRow);
-  }
-  for (const r of (data ?? []) as CityRow[]) {
-    const key = `${r.country}|${r.state}|${r.city}`;
-    const existing = cityRowMap.get(key);
-    cityRowMap.set(key, {
-      ...r,
-      status: existing?.status === "completed" ? "completed" : r.status,
-      firm_count: Math.max(r.firm_count, existing?.firm_count ?? 0),
-      is_manual_override: r.is_manual_override || Boolean(existing?.is_manual_override),
-      note: r.note ?? existing?.note ?? null,
-    });
-  }
-  const dbRows = Array.from(cityRowMap.values());
+  const dbRows = (data ?? []) as CityRow[];
 
   // Default to the country with the most firms, so the page opens on the market that's being worked.
   const firmsByCountry = new Map<string, number>();

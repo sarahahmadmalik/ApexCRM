@@ -3,8 +3,8 @@ import { createClient } from "@/lib/supabase/server";
 import { requirePageAccess } from "@/lib/auth/guards";
 import { PageHeader } from "@/components/ui/page-header";
 import { StatCard } from "@/components/ui/card";
+import { ErrorNotice } from "@/components/ui/error-notice";
 import { TimeLeaveBoard, type EmployeeCompensationProfile } from "@/components/time-leave/time-leave-board";
-import { DEMO_LEAVE_REQUESTS, DEMO_TIMESHEETS } from "@/lib/data/showcase-seed";
 import { EMPLOYMENT_TYPE_LABELS } from "@/lib/utils";
 
 export const metadata = { title: "Time, Leave & Employee Portal" };
@@ -21,9 +21,9 @@ export default async function TimeLeavePage() {
       : Promise.resolve({ data: null }),
   ]);
 
-  const isDemoFallback = Boolean(leavesRes.error || timesheetsRes.error);
-  const leaves = isDemoFallback ? DEMO_LEAVE_REQUESTS : (leavesRes.data ?? []);
-  const timesheets = isDemoFallback ? DEMO_TIMESHEETS : (timesheetsRes.data ?? []);
+  const queryError = leavesRes.error ?? timesheetsRes.error;
+  const leaves = leavesRes.data ?? [];
+  const timesheets = timesheetsRes.data ?? [];
 
   const emp = employeeRes.data;
   const monthlyGross =
@@ -101,13 +101,16 @@ export default async function TimeLeavePage() {
         />
       </div>
 
-      <TimeLeaveBoard
-        initialLeaves={leaves}
-        initialTimesheets={timesheets}
-        isDemoFallback={isDemoFallback}
-        isBoss={appUser.isAdmin}
-        employeeProfile={employeeProfile}
-      />
+      {queryError ? (
+        <ErrorNotice message={queryError.message} />
+      ) : (
+        <TimeLeaveBoard
+          initialLeaves={leaves}
+          initialTimesheets={timesheets}
+          isBoss={appUser.isAdmin}
+          employeeProfile={employeeProfile}
+        />
+      )}
     </div>
   );
 }

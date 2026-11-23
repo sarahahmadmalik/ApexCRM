@@ -3,8 +3,8 @@ import { createClient } from "@/lib/supabase/server";
 import { requirePageAccess } from "@/lib/auth/guards";
 import { PageHeader } from "@/components/ui/page-header";
 import { StatCard } from "@/components/ui/card";
+import { ErrorNotice } from "@/components/ui/error-notice";
 import { HiringBoard } from "@/components/hiring/hiring-board";
-import { DEMO_JOB_CANDIDATES, DEMO_JOB_OPENINGS } from "@/lib/data/showcase-seed";
 
 export const metadata = { title: "Hiring & ATS · ApexCRM" };
 
@@ -17,9 +17,9 @@ export default async function HiringPage() {
     supabase.from("job_candidates").select("*").order("created_at", { ascending: false }),
   ]);
 
-  const isDemoFallback = Boolean(openingsRes.error || candidatesRes.error);
-  const openings = isDemoFallback ? DEMO_JOB_OPENINGS : (openingsRes.data ?? []);
-  const candidates = isDemoFallback ? DEMO_JOB_CANDIDATES : (candidatesRes.data ?? []);
+  const queryError = openingsRes.error ?? candidatesRes.error;
+  const openings = openingsRes.data ?? [];
+  const candidates = candidatesRes.data ?? [];
 
   const openRolesCount = openings.filter((j) => j.status === "open").length;
   const activeCandidatesCount = candidates.filter((c) => c.stage !== "rejected" && c.stage !== "hired").length;
@@ -65,11 +65,11 @@ export default async function HiringPage() {
         />
       </div>
 
-      <HiringBoard
-        initialOpenings={openings}
-        initialCandidates={candidates}
-        isDemoFallback={isDemoFallback}
-      />
+      {queryError ? (
+        <ErrorNotice message={queryError.message} />
+      ) : (
+        <HiringBoard initialOpenings={openings} initialCandidates={candidates} />
+      )}
     </div>
   );
 }

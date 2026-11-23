@@ -3,8 +3,8 @@ import { createClient } from "@/lib/supabase/server";
 import { requirePageAccess } from "@/lib/auth/guards";
 import { PageHeader } from "@/components/ui/page-header";
 import { StatCard } from "@/components/ui/card";
+import { ErrorNotice } from "@/components/ui/error-notice";
 import { ProjectsBoard } from "@/components/projects/projects-board";
-import { DEMO_PROJECTS, DEMO_PROJECT_TASKS } from "@/lib/data/showcase-seed";
 import { formatCurrency } from "@/lib/utils";
 
 export const metadata = { title: "Projects & Tasks · ApexCRM" };
@@ -18,9 +18,9 @@ export default async function ProjectsPage() {
     supabase.from("project_tasks").select("*").order("created_at", { ascending: false }),
   ]);
 
-  const isDemoFallback = Boolean(projectsRes.error || tasksRes.error);
-  const projects = isDemoFallback ? DEMO_PROJECTS : (projectsRes.data ?? []);
-  const tasks = isDemoFallback ? DEMO_PROJECT_TASKS : (tasksRes.data ?? []);
+  const queryError = projectsRes.error ?? tasksRes.error;
+  const projects = projectsRes.data ?? [];
+  const tasks = tasksRes.data ?? [];
 
   const activeProjects = projects.filter((p) => p.status === "active" || p.status === "planning").length;
   const totalBudget = projects.reduce((sum, p) => sum + Number(p.budget ?? 0), 0);
@@ -68,7 +68,11 @@ export default async function ProjectsPage() {
         />
       </div>
 
-      <ProjectsBoard initialProjects={projects} initialTasks={tasks} isDemoFallback={isDemoFallback} />
+      {queryError ? (
+        <ErrorNotice message={queryError.message} />
+      ) : (
+        <ProjectsBoard initialProjects={projects} initialTasks={tasks} />
+      )}
     </div>
   );
 }

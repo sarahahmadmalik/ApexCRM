@@ -3,8 +3,8 @@ import { createClient } from "@/lib/supabase/server";
 import { requirePageAccess } from "@/lib/auth/guards";
 import { PageHeader } from "@/components/ui/page-header";
 import { StatCard } from "@/components/ui/card";
+import { ErrorNotice } from "@/components/ui/error-notice";
 import { ExpensesBoard } from "@/components/expenses/expenses-board";
-import { DEMO_EXPENSE_CLAIMS, DEMO_PAYROLL_RUNS } from "@/lib/data/showcase-seed";
 import { formatCurrency } from "@/lib/utils";
 
 export const metadata = { title: "Expenses & Payroll · ApexCRM" };
@@ -18,9 +18,9 @@ export default async function ExpensesPage() {
     supabase.from("payroll_runs").select("*").order("pay_date", { ascending: false }),
   ]);
 
-  const isDemoFallback = Boolean(claimsRes.error || payrollRes.error);
-  const claims = isDemoFallback ? DEMO_EXPENSE_CLAIMS : (claimsRes.data ?? []);
-  const payroll = isDemoFallback ? DEMO_PAYROLL_RUNS : (payrollRes.data ?? []);
+  const queryError = claimsRes.error ?? payrollRes.error;
+  const claims = claimsRes.data ?? [];
+  const payroll = payrollRes.data ?? [];
 
   const latestPayroll = payroll[0]?.gross_total ?? 0;
   const pendingClaimsTotal = claims
@@ -70,7 +70,11 @@ export default async function ExpensesPage() {
         />
       </div>
 
-      <ExpensesBoard initialClaims={claims} initialPayroll={payroll} isDemoFallback={isDemoFallback} />
+      {queryError ? (
+        <ErrorNotice message={queryError.message} />
+      ) : (
+        <ExpensesBoard initialClaims={claims} initialPayroll={payroll} />
+      )}
     </div>
   );
 }
