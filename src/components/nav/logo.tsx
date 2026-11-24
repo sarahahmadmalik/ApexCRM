@@ -40,11 +40,11 @@ export function Logo({
   return (
     <svg
       className={className}
-      viewBox="0 0 176 44"
+      viewBox="0 0 236 44"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       role="img"
-      aria-label="Apex CRM"
+      aria-label="Dua Apex CRM"
     >
       {/* Architectural Apex mark (x: 4..36) */}
       <path
@@ -56,9 +56,20 @@ export function Logo({
         fill={accent}
       />
 
-      {/* Tightly kerned "apex" wordmark + smaller cyan "CRM" */}
+      {/* Tightly kerned "Dua apex" wordmark + smaller cyan "CRM" */}
       <text
         x="40"
+        y="34"
+        fontFamily="Poppins, sans-serif"
+        fontSize="31"
+        fontWeight="700"
+        letterSpacing="-0.9"
+        fill={primary}
+      >
+        Dua
+      </text>
+      <text
+        x="106"
         y="34"
         fontFamily="Poppins, sans-serif"
         fontSize="31"
@@ -69,7 +80,7 @@ export function Logo({
         apex
       </text>
       <text
-        x="120"
+        x="188"
         y="34"
         fontFamily="Poppins, sans-serif"
         fontSize="14"
